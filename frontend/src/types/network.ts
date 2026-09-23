@@ -68,3 +68,57 @@ export interface SystemHealth {
   timestamp: string;
   environment: string;
 }
+
+export interface AiDiagnosisResult {
+  siteCode: string;
+  siteName: string;
+  status: OperationalStatus;
+  primaryTech: string;
+  backupTech?: string | null;
+  summary: string;
+  probableRootCause: string;
+  slaImpact: string;
+  recommendedActions: string[];
+  incidentDraft: {
+    incidentCode: string;
+    incidentTitle: string;
+    severity: string;
+    assignedTeam: string;
+    description: string;
+    immediateActions: string[];
+  };
+  confidenceScore: number;
+  modelUsed: string;
+  timestamp: string;
+}
+
+export interface WeeklyReportSiteFocus {
+  siteCode: string;
+  siteName: string;
+  city: string;
+  status: OperationalStatus;
+  primaryTech: string;
+  backupTech?: string | null;
+  priorityLevel: 'CRITICAL - IMMEDIATE ACTION' | 'HIGH - ESCALATION' | 'MEDIUM - MONITOR';
+  identifiedIssue: string;
+  recommendedAction: string;
+}
+
+export interface WeeklyNetworkReport {
+  reportPeriod: string;
+  generatedAt: string;
+  executiveSummary: string;
+  networkSlaPercent: number;
+  totalSites: number;
+  criticalSitesCount: number;
+  degradedSitesCount: number;
+  healthySitesCount: number;
+  priorityFocusSites: WeeklyReportSiteFocus[];
+  technologyReliabilityBreakdown: {
+    technology: string;
+    reliabilityScore: number;
+    observation: string;
+  }[];
+  weeklyFieldRecommendations: string[];
+  modelUsed: string;
+}

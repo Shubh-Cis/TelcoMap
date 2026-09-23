@@ -1,4 +1,4 @@
-import { Site, NetworkSummary, TopologyData, SystemHealth, Device } from '../types/network';
+import { Site, NetworkSummary, TopologyData, SystemHealth, Device, AiDiagnosisResult, WeeklyNetworkReport } from '../types/network';
 
 const API_BASE = '/api';
 
@@ -79,5 +79,31 @@ export const networkApi = {
       body: JSON.stringify(data),
     });
     return handleResponse<Site>(res);
+  },
+
+  /**
+   * Runs AI Root-Cause Diagnostic on a specific network site
+   */
+  async diagnoseSite(siteId: string, customQuery?: string): Promise<AiDiagnosisResult> {
+    if (customQuery) {
+      const res = await fetch(`${API_BASE}/ai/diagnose/${siteId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ customQuery }),
+      });
+      return handleResponse<AiDiagnosisResult>(res);
+    }
+    const res = await fetch(`${API_BASE}/ai/diagnose/${siteId}`);
+    return handleResponse<AiDiagnosisResult>(res);
+  },
+
+  /**
+   * Generates the Executive Weekly Operations & Focus Report
+   */
+  async getWeeklyReport(): Promise<WeeklyNetworkReport> {
+    const res = await fetch(`${API_BASE}/ai/weekly-report`);
+    return handleResponse<WeeklyNetworkReport>(res);
   },
 };

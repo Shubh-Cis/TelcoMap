@@ -4,6 +4,7 @@ import { PrismaModule } from './common/prisma/prisma.module';
 import { SitesModule } from './sites/sites.module';
 import { DevicesModule } from './devices/devices.module';
 import { HealthModule } from './health/health.module';
+import { AiModule } from './ai/ai.module';
 import { RequestLoggerMiddleware } from './common/logger/request-logger.middleware';
 
 @Module({
@@ -15,6 +16,7 @@ import { RequestLoggerMiddleware } from './common/logger/request-logger.middlewa
     SitesModule,
     DevicesModule,
     HealthModule,
+    AiModule,
   ],
 })
 export class AppModule implements NestModule {

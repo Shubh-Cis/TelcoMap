@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Database, RefreshCw, Radio, Layers, MapPin, Plus } from 'lucide-react';
+import { Activity, Database, RefreshCw, Radio, Layers, MapPin, Plus, Sparkles, FileText } from 'lucide-react';
 import { SystemHealth } from '../types/network';
 
 interface HeaderProps {
@@ -9,6 +9,7 @@ interface HeaderProps {
   activeView: 'map' | 'topology' | 'table';
   onViewChange: (view: 'map' | 'topology' | 'table') => void;
   onOpenAddSite: () => void;
+  onOpenWeeklyReport: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeView,
   onViewChange,
   onOpenAddSite,
+  onOpenWeeklyReport,
 }) => {
   const isHealthy = health?.status === 'ok' && health?.database === 'connected';
 
@@ -108,6 +110,16 @@ export const Header: React.FC<HeaderProps> = ({
             <Database className="w-3 h-3 text-slate-400" />
             <span>{health?.database === 'connected' ? 'PostgreSQL OK' : 'DB Sync'}</span>
           </div>
+
+          {/* Weekly Operations AI Report Action */}
+          <button
+            onClick={onOpenWeeklyReport}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer border border-indigo-400/30"
+            title="Generate AI-driven weekly operations & site focus report"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+            <span>Weekly AI Report</span>
+          </button>
 
           {/* Add Site Action */}
           <button

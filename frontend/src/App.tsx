@@ -6,6 +6,7 @@ import { SiteDetails } from './components/SiteDetails';
 import { SiteTable } from './components/SiteTable';
 import { NetworkTopology } from './components/NetworkTopology';
 import { AddSiteModal } from './components/AddSiteModal';
+import { WeeklyReportModal } from './components/WeeklyReportModal';
 import { networkApi } from './services/networkApi';
 import { Site, NetworkSummary as SummaryType, TopologyData, SystemHealth, OperationalStatus } from './types/network';
 import { Info, AlertCircle } from 'lucide-react';
@@ -15,6 +16,7 @@ export function App() {
   const [selectedFilter, setSelectedFilter] = useState<OperationalStatus | 'ALL'>('ALL');
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState<boolean>(false);
 
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [summary, setSummary] = useState<SummaryType | null>(null);
@@ -93,6 +95,7 @@ export function App() {
         activeView={activeView}
         onViewChange={setActiveView}
         onOpenAddSite={() => setIsAddModalOpen(true)}
+        onOpenWeeklyReport={() => setIsWeeklyModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -195,6 +198,19 @@ export function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSiteCreated={handleSiteCreated}
+      />
+
+      {/* Weekly AI Operations & Focus Report Modal */}
+      <WeeklyReportModal
+        isOpen={isWeeklyModalOpen}
+        onClose={() => setIsWeeklyModalOpen(false)}
+        onSelectSite={(siteCode) => {
+          const match = sites.find((s) => s.siteCode === siteCode);
+          if (match) {
+            setSelectedSite(match);
+            setActiveView('map');
+          }
+        }}
       />
 
       {/* Footer */}

@@ -66,4 +66,18 @@ export const networkApi = {
     const res = await fetch(url);
     return handleResponse<Device[]>(res);
   },
+
+  /**
+   * Provisions a new network site with coordinates and hardware in PostgreSQL
+   */
+  async createSite(data: any): Promise<Site> {
+    const res = await fetch(`${API_BASE}/sites`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<Site>(res);
+  },
 };

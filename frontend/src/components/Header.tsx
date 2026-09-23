@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, Database, RefreshCw, Radio, Layers, MapPin } from 'lucide-react';
+import { Activity, Database, RefreshCw, Radio, Layers, MapPin, Plus } from 'lucide-react';
 import { SystemHealth } from '../types/network';
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   onRefresh: () => void;
   activeView: 'map' | 'topology' | 'table';
   onViewChange: (view: 'map' | 'topology' | 'table') => void;
+  onOpenAddSite: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   onRefresh,
   activeView,
   onViewChange,
+  onOpenAddSite,
 }) => {
   const isHealthy = health?.status === 'ok' && health?.database === 'connected';
 
@@ -107,11 +109,21 @@ export const Header: React.FC<HeaderProps> = ({
             <span>{health?.database === 'connected' ? 'PostgreSQL OK' : 'DB Sync'}</span>
           </div>
 
+          {/* Add Site Action */}
+          <button
+            onClick={onOpenAddSite}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all cursor-pointer"
+            title="Provision a new network site to the NOC"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Site</span>
+          </button>
+
           {/* Refresh Action */}
           <button
             onClick={onRefresh}
             disabled={loading}
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
             title="Refresh network telemetry & status"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-sky-400' : ''}`} />

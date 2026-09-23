@@ -277,7 +277,25 @@ curl -s http://localhost:3000/api/sites | jq '.[0]'
 }
 ```
 
-#### 4. Filter Sites by Operational Status
+#### 4. Provision a New Network Site (POST)
+```bash
+curl -s -X POST http://localhost:3000/api/sites \
+  -H "Content-Type: application/json" \
+  -d '{
+    "siteCode": "ZM-007",
+    "siteName": "Kasama Regional Hub",
+    "city": "Kasama",
+    "region": "Northern Province",
+    "country": "Zambia",
+    "latitude": -10.2129,
+    "longitude": 31.1808,
+    "status": "HEALTHY",
+    "primaryTech": "FOUR_G",
+    "backupTech": "SATELLITE"
+  }' | jq .
+```
+
+#### 5. Filter Sites by Operational Status
 ```bash
 # Query only degraded sites
 curl -s "http://localhost:3000/api/sites?status=DEGRADED" | jq .

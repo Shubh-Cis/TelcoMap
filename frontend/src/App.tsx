@@ -5,6 +5,7 @@ import { NetworkMap } from './components/NetworkMap';
 import { SiteDetails } from './components/SiteDetails';
 import { SiteTable } from './components/SiteTable';
 import { NetworkTopology } from './components/NetworkTopology';
+import { AddSiteModal } from './components/AddSiteModal';
 import { networkApi } from './services/networkApi';
 import { Site, NetworkSummary as SummaryType, TopologyData, SystemHealth, OperationalStatus } from './types/network';
 import { Info, AlertCircle } from 'lucide-react';
@@ -13,6 +14,7 @@ export function App() {
   const [activeView, setActiveView] = useState<'map' | 'topology' | 'table'>('map');
   const [selectedFilter, setSelectedFilter] = useState<OperationalStatus | 'ALL'>('ALL');
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [summary, setSummary] = useState<SummaryType | null>(null);
@@ -69,6 +71,18 @@ export function App() {
     return () => clearInterval(interval);
   }, []);
 
+  const handleSiteCreated = (newSite: Site) => {
+    setSites((prev) => {
+      const exists = prev.some((s) => s.id === newSite.id || s.siteCode === newSite.siteCode);
+      if (exists) return prev;
+      return [...prev, newSite];
+    });
+    setSelectedSite(newSite);
+    setActiveView('map');
+    // Refresh operational summary and topology
+    loadNetworkData();
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top NOC Header */}
@@ -78,6 +92,7 @@ export function App() {
         onRefresh={loadNetworkData}
         activeView={activeView}
         onViewChange={setActiveView}
+        onOpenAddSite={() => setIsAddModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -166,6 +181,7 @@ export function App() {
                 setActiveView('map');
               }}
               selectedSiteId={selectedSite?.id}
+              onOpenAddSite={() => setIsAddModalOpen(true)}
             />
             {selectedSite && (
               <SiteDetails site={selectedSite} onClose={() => setSelectedSite(null)} />
@@ -173,6 +189,13 @@ export function App() {
           </div>
         )}
       </main>
+
+      {/* Provision New Site Modal */}
+      <AddSiteModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSiteCreated={handleSiteCreated}
+      />
 
       {/* Footer */}
       <footer className="border-t border-slate-850 bg-slate-900/50 py-4 px-6 text-center text-xs text-slate-500">

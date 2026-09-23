@@ -1,9 +1,81 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma/prisma.service';
 
 @Injectable()
 export class SitesService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Provisions a new network site with its backhauls and initial device hardware.
+   */
+  async create(data: {
+    siteCode: string;
+    siteName: string;
+    country?: string;
+    region?: string;
+    city: string;
+    latitude: number;
+    longitude: number;
+    status?: string;
+    primaryTech: string;
+    backupTech?: string;
+    device?: {
+      deviceCode?: string;
+      name?: string;
+      type?: string;
+      vendor?: string;
+      model?: string;
+      ipAddress?: string;
+      status?: string;
+    };
+  }) {
+    if (!data.siteCode || !data.siteName || !data.city || data.latitude === undefined || data.longitude === undefined) {
+      throw new BadRequestException('Site code, name, city, latitude, and longitude are required');
+    }
+
+    const cleanCode = data.siteCode.trim().toUpperCase();
+
+    const existing = await this.prisma.site.findUnique({
+      where: { siteCode: cleanCode },
+    });
+
+    if (existing) {
+      throw new BadRequestException(`A network site with code '${cleanCode}' already exists`);
+    }
+
+    const deviceData = data.device && data.device.name ? [
+      {
+        deviceCode: data.device.deviceCode || `DEV-${cleanCode}-01`,
+        name: data.device.name,
+        type: data.device.type || 'GATEWAY',
+        vendor: data.device.vendor || 'Generic',
+        model: data.device.model || 'Standard Edge',
+        ipAddress: data.device.ipAddress || '10.10.99.1',
+        status: data.device.status || (data.status === 'CRITICAL' ? 'OFFLINE' : data.status === 'DEGRADED' ? 'DEGRADED' : 'ONLINE'),
+      }
+    ] : [];
+
+    return this.prisma.site.create({
+      data: {
+        siteCode: cleanCode,
+        siteName: data.siteName.trim(),
+        country: (data.country || 'Zambia').trim(),
+        region: (data.region || 'General').trim(),
+        city: data.city.trim(),
+        latitude: parseFloat(String(data.latitude)),
+        longitude: parseFloat(String(data.longitude)),
+        status: (data.status || 'HEALTHY').toUpperCase(),
+        primaryTech: (data.primaryTech || 'FOUR_G').toUpperCase(),
+        backupTech: data.backupTech ? data.backupTech.toUpperCase() : null,
+        devices: {
+          create: deviceData,
+        },
+      },
+      include: {
+        devices: true,
+      },
+    });
+  }
 
   /**
    * Retrieves all network sites with their deployed devices.

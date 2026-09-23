@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { SitesService } from './sites.service';
 
 @Controller('sites')
@@ -23,5 +23,10 @@ export class SitesController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.sitesService.findOne(id);
+  }
+
+  @Post()
+  async create(@Body() createSiteDto: any) {
+    return this.sitesService.create(createSiteDto);
   }
 }

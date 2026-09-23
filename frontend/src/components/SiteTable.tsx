@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, MapPin, Radio, Wifi, Server, CheckCircle2, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { Eye, MapPin, Radio, Wifi, Server, CheckCircle2, AlertTriangle, AlertOctagon, Plus } from 'lucide-react';
 import { Site, OperationalStatus } from '../types/network';
 
 interface SiteTableProps {
@@ -8,6 +8,7 @@ interface SiteTableProps {
   onSelectFilter: (status: OperationalStatus | 'ALL') => void;
   onSelectSite: (site: Site) => void;
   selectedSiteId?: string;
+  onOpenAddSite?: () => void;
 }
 
 export const SiteTable: React.FC<SiteTableProps> = ({
@@ -16,6 +17,7 @@ export const SiteTable: React.FC<SiteTableProps> = ({
   onSelectFilter,
   onSelectSite,
   selectedSiteId,
+  onOpenAddSite,
 }) => {
   const filteredSites = sites.filter((s) => {
     if (selectedFilter === 'ALL') return true;
@@ -36,21 +38,33 @@ export const SiteTable: React.FC<SiteTableProps> = ({
           </p>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800 self-start sm:self-auto">
-          {(['ALL', 'HEALTHY', 'DEGRADED', 'CRITICAL'] as const).map((filter) => (
+        {/* Filter Pills & Add Site */}
+        <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            {(['ALL', 'HEALTHY', 'DEGRADED', 'CRITICAL'] as const).map((filter) => (
+              <button
+                key={filter}
+                onClick={() => onSelectFilter(filter)}
+                className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
+                  selectedFilter === filter
+                    ? 'bg-sky-500 text-white shadow'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-850'
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          {onOpenAddSite && (
             <button
-              key={filter}
-              onClick={() => onSelectFilter(filter)}
-              className={`px-2.5 py-1 rounded text-xs font-semibold transition-colors ${
-                selectedFilter === filter
-                  ? 'bg-sky-500 text-white shadow'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-850'
-              }`}
+              onClick={onOpenAddSite}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all cursor-pointer"
             >
-              {filter}
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Site</span>
             </button>
-          ))}
+          )}
         </div>
       </div>
 

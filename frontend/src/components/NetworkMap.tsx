@@ -91,22 +91,53 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
   selectedSite,
   onSelectSite,
 }) => {
+  const [mapTheme, setMapTheme] = React.useState<'dark' | 'standard'>('dark');
+
   // Centered roughly over Zambia (Lusaka - Ndola corridor)
   const defaultCenter: [number, number] = [-14.5, 27.8];
   const defaultZoom = 6;
 
   return (
     <div className="relative w-full h-[540px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
+      {/* Map Theme Toggle (100% Free OpenStreetMap - No API Key Needed) */}
+      <div className="absolute top-3 right-3 z-20 bg-slate-900/95 backdrop-blur-md p-1 rounded-lg border border-slate-700/80 text-xs shadow-xl pointer-events-auto flex items-center gap-1">
+        <button
+          onClick={() => setMapTheme('dark')}
+          className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
+            mapTheme === 'dark'
+              ? 'bg-sky-500 text-white shadow'
+              : 'text-slate-400 hover:text-white'
+          }`}
+          title="NOC Dark Mode (Pure OpenStreetMap with CSS filter)"
+        >
+          NOC Dark
+        </button>
+        <button
+          onClick={() => setMapTheme('standard')}
+          className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
+            mapTheme === 'standard'
+              ? 'bg-sky-500 text-white shadow'
+              : 'text-slate-400 hover:text-white'
+          }`}
+          title="Standard Full-Color OpenStreetMap"
+        >
+          Standard OSM
+        </button>
+      </div>
+
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
         className="w-full h-full z-10"
         scrollWheelZoom={true}
       >
-        {/* Sleek Dark CartoDB Matter Tile Layer */}
+        {/* OpenStreetMap Tile Layer (100% Free & Open Source - No API Key Required) */}
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          key={mapTheme}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          className={mapTheme === 'dark' ? 'dark-map-tiles' : ''}
+          maxZoom={19}
         />
 
         <MapController selectedSite={selectedSite} />

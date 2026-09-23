@@ -319,7 +319,8 @@ When you open **`http://localhost:3000`** in your browser, you have access to th
    - **SLA Index**: `70%` core network availability.
 
 3. **View 1: Geographic NOC Map**:
-   - Sleek dark map centered over Zambia.
+   - 100% Free Open-Source OpenStreetMap tiles (No API key or external account needed).
+   - Theme toggle on the map: **NOC Dark Mode** (custom CSS filter) or **Standard OSM** (full-color street view).
    - Interactive pins colored according to operational health.
    - Animated pulsing radar ring on critical site (`ZM-004`).
    - Clicking any pin centers the map and displays the **Site Inspector** showing location, primary/backup technologies, and installed hardware.

@@ -251,6 +251,19 @@ The platform provides live KPI monitoring across executive cards, maps, and tabl
   * **Prescribed Remediation Checklist**: 3-step prioritized action plan for NOC tier-1 dispatchers.
   * **Standardized Incident Ticket Draft**: Generates pre-formatted tickets with one-click copy to clipboard.
 
+#### Feature 9: Regional Internet & ISP Radar ([`RadarWidget.tsx`](file:///home/cis/TelcoMap/frontend/src/components/RadarWidget.tsx))
+* **Live Cloudflare Radar API Integration**: Directly consumes Cloudflare Radar BGP and IQI (Internet Quality Index) telemetry for Zambia (`location=ZM`) and regional African backbones.
+* **Real-Time National Telemetry**:
+  * **Download Bandwidth**: Median, 25th, and 75th percentile national throughput (Mbps).
+  * **Transit Latency**: End-to-end round-trip time (RTT in ms) across international gateways.
+  * **DNS Resolution**: Core DNS query resolution speed (ms).
+* **Live Outage & Cable-Cut Tracker**:
+  * Real-time detection of subsea fiber cuts, power grid failures, and ASN-level ISP routing anomalies.
+  * Instant status verification: Green pulse indicator confirming 0 active fiber cuts in Zambia.
+* **High-Performance Architecture**:
+  * In-memory 5-minute caching layer preventing rate-limit throttling and delivering <5ms response times.
+  * Zero-crash fallback baseline ensuring continuous dashboard uptime even when offline.
+
 ---
 
 ### 7. Initial Seed Topology (Zambia Infrastructure)

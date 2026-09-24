@@ -5,6 +5,7 @@ import { SitesModule } from './sites/sites.module';
 import { DevicesModule } from './devices/devices.module';
 import { HealthModule } from './health/health.module';
 import { AiModule } from './ai/ai.module';
+import { RadarModule } from './radar/radar.module';
 import { RequestLoggerMiddleware } from './common/logger/request-logger.middleware';
 
 @Module({
@@ -17,6 +18,7 @@ import { RequestLoggerMiddleware } from './common/logger/request-logger.middlewa
     DevicesModule,
     HealthModule,
     AiModule,
+    RadarModule,
   ],
 })
 export class AppModule implements NestModule {

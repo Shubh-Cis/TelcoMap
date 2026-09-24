@@ -7,6 +7,7 @@ import { SiteTable } from './components/SiteTable';
 import { NetworkTopology } from './components/NetworkTopology';
 import { AddSiteModal } from './components/AddSiteModal';
 import { WeeklyReportModal } from './components/WeeklyReportModal';
+import { RadarWidget } from './components/RadarWidget';
 import { networkApi } from './services/networkApi';
 import { Site, NetworkSummary as SummaryType, TopologyData, SystemHealth, OperationalStatus } from './types/network';
 import { Info, AlertCircle } from 'lucide-react';
@@ -137,6 +138,9 @@ export function App() {
           onSelectFilter={setSelectedFilter}
         />
 
+        {/* Regional Telemetry & ISP Outage Radar (Cloudflare Radar) */}
+        <RadarWidget />
+
         {/* VIEW 1: Interactive Geographic NOC Map */}
         {activeView === 'map' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -147,7 +151,7 @@ export function App() {
                 onSelectSite={setSelectedSite}
               />
             </div>
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 rounded-xl transition-all duration-300" id="site-inspector-panel">
               {selectedSite ? (
                 <SiteDetails site={selectedSite} onClose={() => setSelectedSite(null)} />
               ) : (

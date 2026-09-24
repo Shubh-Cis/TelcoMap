@@ -211,10 +211,21 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
                     </div>
                   </div>
                   <button
-                    onClick={() => onSelectSite(site)}
-                    className="w-full text-xs font-semibold py-1 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors text-center"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      onSelectSite(site);
+                      const panel = document.getElementById('site-inspector-panel');
+                      if (panel) {
+                        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        panel.classList.add('ring-2', 'ring-sky-400');
+                        setTimeout(() => panel.classList.remove('ring-2', 'ring-sky-400'), 1500);
+                      }
+                    }}
+                    className="w-full text-xs font-semibold py-1.5 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white rounded transition-all text-center cursor-pointer shadow-md flex items-center justify-center gap-1 mt-1"
                   >
-                    Inspect Site Details
+                    <span>Inspect Site Details &rarr;</span>
                   </button>
                 </div>
               </Popup>

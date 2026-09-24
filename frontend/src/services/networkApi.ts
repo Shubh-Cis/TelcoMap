@@ -1,4 +1,4 @@
-import { Site, NetworkSummary, TopologyData, SystemHealth, Device, AiDiagnosisResult, WeeklyNetworkReport } from '../types/network';
+import { Site, NetworkSummary, TopologyData, SystemHealth, Device, AiDiagnosisResult, WeeklyNetworkReport, RadarTelemetrySummary } from '../types/network';
 
 const API_BASE = '/api';
 
@@ -105,5 +105,15 @@ export const networkApi = {
   async getWeeklyReport(): Promise<WeeklyNetworkReport> {
     const res = await fetch(`${API_BASE}/ai/weekly-report`);
     return handleResponse<WeeklyNetworkReport>(res);
+  },
+
+  /**
+   * Fetches real-time internet quality index & outage telemetry from Cloudflare Radar
+   */
+  async getRadarSummary(country = 'ZM', refresh = false): Promise<RadarTelemetrySummary> {
+    const params = new URLSearchParams({ country });
+    if (refresh) params.append('refresh', 'true');
+    const res = await fetch(`${API_BASE}/radar/summary?${params.toString()}`);
+    return handleResponse<RadarTelemetrySummary>(res);
   },
 };

@@ -41,6 +41,7 @@ services:
       CORS_ORIGIN: "*"
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-1.5-flash}
+      CLOUDFLARE_RADAR_TOKEN: ${CLOUDFLARE_RADAR_TOKEN:-}
     ports:
       - "3001:3001"
     healthcheck:

@@ -257,12 +257,21 @@ The platform provides live KPI monitoring across executive cards, maps, and tabl
   * **Download Bandwidth**: Median, 25th, and 75th percentile national throughput (Mbps).
   * **Transit Latency**: End-to-end round-trip time (RTT in ms) across international gateways.
   * **DNS Resolution**: Core DNS query resolution speed (ms).
-* **Live Outage & Cable-Cut Tracker**:
-  * Real-time detection of subsea fiber cuts, power grid failures, and ASN-level ISP routing anomalies.
-  * Instant status verification: Green pulse indicator confirming 0 active fiber cuts in Zambia.
-* **High-Performance Architecture**:
-  * In-memory 5-minute caching layer preventing rate-limit throttling and delivering <5ms response times.
-  * Zero-crash fallback baseline ensuring continuous dashboard uptime even when offline.
+#### Feature 10: BSS Enterprise SLA Contract Governance ([`SiteDetails.tsx`](file:///home/cis/TelcoMap/frontend/src/components/SiteDetails.tsx))
+* **Enterprise Client Contract Tracking**: Maps real Zambian enterprise accounts (First Quantum Minerals in Solwezi, Stanbic Bank in Lusaka, Konkola Copper Mines in Ndola).
+* **Financial Penalty Exposure**: Translates packet loss and outage minutes into contractual SLA credit risk (e.g. `-$5,700 SLA Credit Exposure` during critical downtime).
+* **Monthly Recurring Revenue (MRR)**: Tracks site revenue contributions against contractual SLA thresholds (99.90% to 99.99%).
+
+#### Feature 11: OSS Automated Field Work-Order Dispatch ([`WorkOrderModal.tsx`](file:///home/cis/TelcoMap/frontend/src/components/WorkOrderModal.tsx))
+* **Operational Bridge from NOC to Field**: One-click dispatch button inside the Site Inspector (`🚚 Dispatch OSS Work Order`).
+* **Truck-Roll Cost Orchestration**: Calculates estimated vehicle, fuel, and certified rigging crew costs (e.g. `$480 USD` for Solwezi 4x4 mobile rigging truck).
+* **Spare Parts Bill of Materials (BOM)**: Automatically stages required replacement hardware (Ku-band feedhorns, SFP+ 10G optical modules, OTDR cable fault locators).
+* **Live Dispatch Beacon**: Instant authorization with animated live tracking beacon and copyable field dispatch manifest.
+
+#### Feature 12: Converged Infrastructure SDN Dynamic Failover Simulator ([`SiteDetails.tsx`](file:///home/cis/TelcoMap/frontend/src/components/SiteDetails.tsx))
+* **Interactive Link Cut Simulation**: One-click `⚡ Simulate Link Cut` button on any multi-technology site.
+* **Autonomous NTN/Satellite Failover**: Demonstrates instant software-defined rerouting from physical fiber/microwave to satellite backhaul (Starlink VSAT).
+* **Live Operational Status Shift**: Visually demonstrates how SDN failover keeps critical services alive while alerting the NOC to dispatch fiber repair crews.
 
 ---
 

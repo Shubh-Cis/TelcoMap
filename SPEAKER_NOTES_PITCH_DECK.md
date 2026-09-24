@@ -155,6 +155,33 @@
 
 ---
 
+## Stage 5B: The OSS/BSS Operational Bridge & Converged Failover (3 Minutes)
+### *Bridging Network Telemetry to Business Dollars & Field Dispatch*
+
+#### 🖥️ What to Show on Screen:
+* Inside the Site Inspector for `ZM-004: Solwezi`:
+  1. Click **`⚡ Simulate Link Cut`** under Network Transport Links. Watch the primary link turn red with a strike-through, the backup Satellite VSAT illuminate in green, and the SDN Failover banner appear!
+  2. Scroll to the **BSS Enterprise SLA Contract** section (showing `First Quantum Minerals`, `$28,500/mo`, and `-$5,700 SLA Credit Risk`).
+  3. Point to the **Data Sovereignty & ZICTA Regulatory Status** (`Local Breakout - Lusaka Gateway`, `Lawful Interception Certified`).
+  4. In the AI section, click **`🚚 Dispatch OSS Work Order`**. The **OSS Work-Order Modal** opens showing truck-roll cost (`$480 USD`), staged spares, and ETA. Click **`Authorize & Dispatch Crew`** to show the live green pulsing beacon!
+
+#### 🎙️ What to Say (Word-for-Word):
+> *"Emmanuel, this next capability directly speaks to your emphasis on **OSS/BSS modernization and converged infrastructure**.*
+> 
+> *A recurring problem in African telecom is that network telemetry is completely disconnected from business contracts and field operations. We bridged that divide right here:*
+> 
+> *1. **Dynamic Link Convergence**: Look at what happens when I click **'Simulate Link Cut'**. The primary link drops, and our SDN layer immediately fails over to active Satellite VSAT backhaul. Critical mining operations stay alive with zero human intervention.*
+> 
+> *2. **BSS Contractual Governance**: Right below, our BSS engine translates this event into financial dollars: it identifies the enterprise client—**First Quantum Minerals** paying **$28,500/month**—and warns management that current degradation puts **$5,700 in contractual SLA penalty credits at risk**.*
+> 
+> *3. **Data Sovereignty & Lawful Interception**: It verifies that satellite traffic breaks out locally through the Lusaka Gateway and complies with ZICTA lawful interception mandates.*
+> 
+> *4. **OSS Automated Work-Order Dispatch**: (Click 'Dispatch OSS Work Order') Rather than forcing the dispatcher to switch to an external ticketing tool, our carrier OSS orchestrator prepares a complete field work order: assigning the **North-Western Mobile Rigging Unit**, calculating the **$480 truck-roll cost**, staging the replacement Ku-band feedhorn in the van, and providing an estimated arrival time of 1h 35m. With one click, the NOC authorizes the dispatch.*
+> 
+> *This is how CIS and Intellilink Media can offer African operators a modernized, end-to-end operational platform rather than just another passive dashboard."*
+
+---
+
 ## Stage 6: Operational Sovereignty & Extensibility (3 Minutes)
 
 #### 🖥️ What to Show on Screen:

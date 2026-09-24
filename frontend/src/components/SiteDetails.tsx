@@ -28,6 +28,8 @@ import { getSiteBssProfile, generateOssWorkOrder } from '../utils/bssOssData';
 interface SiteDetailsProps {
   site: Site | null;
   onClose: () => void;
+  isFailoverActive?: boolean;
+  onFailoverToggle?: (active: boolean) => void;
 }
 
 const getTechBadge = (tech: ConnectivityTechnology) => {
@@ -43,19 +45,39 @@ const getTechBadge = (tech: ConnectivityTechnology) => {
   return map[tech] || { label: tech, color: 'bg-slate-700 text-slate-300 border-slate-600' };
 };
 
-export const SiteDetails: React.FC<SiteDetailsProps> = ({ site, onClose }) => {
+export const SiteDetails: React.FC<SiteDetailsProps> = ({
+  site,
+  onClose,
+  isFailoverActive: externalFailover,
+  onFailoverToggle,
+}) => {
   const [diagnosis, setDiagnosis] = useState<AiDiagnosisResult | null>(null);
   const [loadingAi, setLoadingAi] = useState<boolean>(false);
   const [copiedTicket, setCopiedTicket] = useState<boolean>(false);
   const [errorAi, setErrorAi] = useState<string | null>(null);
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState<boolean>(false);
-  const [isFailoverActive, setIsFailoverActive] = useState<boolean>(false);
+  const [internalFailover, setInternalFailover] = useState<boolean>(false);
+
+  const isFailoverActive = externalFailover !== undefined ? externalFailover : internalFailover;
+
+  const handleToggleFailover = () => {
+    const next = !isFailoverActive;
+    if (onFailoverToggle) {
+      onFailoverToggle(next);
+    } else {
+      setInternalFailover(next);
+    }
+  };
 
   // Reset states when selected site changes
   useEffect(() => {
     setDiagnosis(null);
     setErrorAi(null);
-    setIsFailoverActive(false);
+    if (onFailoverToggle) {
+      onFailoverToggle(false);
+    } else {
+      setInternalFailover(false);
+    }
     setIsWorkOrderOpen(false);
   }, [site?.id]);
 
@@ -350,7 +372,7 @@ Synthesized by: ${diagnosis.modelUsed}
               </div>
               {backupBadge && (
                 <button
-                  onClick={() => setIsFailoverActive(!isFailoverActive)}
+                  onClick={handleToggleFailover}
                   className={`text-[11px] font-bold px-2.5 py-1 rounded border transition-colors flex items-center gap-1 cursor-pointer ${
                     isFailoverActive
                       ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'

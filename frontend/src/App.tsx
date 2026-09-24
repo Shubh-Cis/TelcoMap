@@ -18,6 +18,7 @@ export function App() {
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState<boolean>(false);
+  const [isFailoverActive, setIsFailoverActive] = useState<boolean>(false);
 
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [summary, setSummary] = useState<SummaryType | null>(null);
@@ -150,13 +151,19 @@ export function App() {
                 sites={sites.filter((s) => selectedFilter === 'ALL' || s.status === selectedFilter)}
                 selectedSite={selectedSite}
                 onSelectSite={setSelectedSite}
+                isFailoverActive={isFailoverActive}
               />
             </div>
 
             {/* Site Details Panel Directly Below Map */}
             <div className="w-full rounded-xl transition-all duration-300" id="site-inspector-panel">
               {selectedSite ? (
-                <SiteDetails site={selectedSite} onClose={() => setSelectedSite(null)} />
+                <SiteDetails
+                  site={selectedSite}
+                  onClose={() => setSelectedSite(null)}
+                  isFailoverActive={isFailoverActive}
+                  onFailoverToggle={setIsFailoverActive}
+                />
               ) : (
                 <div className="w-full min-h-[140px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
                   <p className="font-semibold mb-1 text-slate-300">No Site Selected</p>
@@ -221,8 +228,15 @@ export function App() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-slate-850 bg-slate-900/50 py-4 px-6 text-center text-xs text-slate-500">
-        Telecom Network Operations &amp; Intelligence Platform &bull; Production PoC Architecture &bull; Zambia Demo Network
+      <footer className="border-t border-slate-850 bg-slate-900/50 py-4 px-6 text-center text-xs text-slate-400">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <span className="font-semibold text-slate-300">Joint Initiative:</span>
+          <span className="text-sky-400 font-medium">Intellilink Media Advisory</span>
+          <span className="text-slate-600">&bull;</span>
+          <span className="text-indigo-400 font-medium">CIS Engineering Delivery</span>
+          <span className="text-slate-600">&bull;</span>
+          <span className="text-slate-500">Telecom Operations &amp; Intelligence Platform (Zambia Demo Network)</span>
+        </div>
       </footer>
     </div>
   );

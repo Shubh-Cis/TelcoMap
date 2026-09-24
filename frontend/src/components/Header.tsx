@@ -32,15 +32,28 @@ export const Header: React.FC<HeaderProps> = ({
             <Radio className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              Telecom Network Operations &amp; Intelligence Platform
-              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                NOC v1.0
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                Telecom Network Operations &amp; Intelligence Platform
+                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                  NOC v1.0
+                </span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
+              <span className="text-xs text-slate-400">
+                Multi-Access Infrastructure (4G / 5G / Fibre / Microwave / Satellite)
               </span>
-            </h1>
-            <p className="text-xs text-slate-400">
-              Multi-Access Network Infrastructure (4G / 5G / Fibre / Microwave / Satellite)
-            </p>
+              <span className="text-slate-600 hidden sm:inline">&bull;</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-sky-950/80 to-indigo-950/80 border border-sky-500/30 text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-slate-300">Architecture:</span>
+                <strong className="text-sky-300 font-semibold tracking-wide">Intellilink Media</strong>
+                <span className="text-slate-500">&times;</span>
+                <span className="text-slate-300">Engineering:</span>
+                <strong className="text-indigo-300 font-semibold tracking-wide">CIS Delivery</strong>
+              </div>
+            </div>
           </div>
         </div>
 

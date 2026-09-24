@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Site, OperationalStatus } from '../types/network';
 
@@ -7,7 +7,79 @@ interface NetworkMapProps {
   sites: Site[];
   selectedSite: Site | null;
   onSelectSite: (site: Site) => void;
+  isFailoverActive?: boolean;
 }
+
+interface BackboneRoute {
+  id: string;
+  name: string;
+  type: 'FIBRE' | 'MICROWAVE' | 'SATELLITE';
+  capacity: string;
+  coords: [number, number][];
+  defaultColor: string;
+}
+
+// Converged national transmission routes across Zambia
+const BACKBONE_ROUTES: BackboneRoute[] = [
+  {
+    id: 'route-core-north',
+    name: 'Lusaka ↔ Ndola Core DWDM Fibre Backbone',
+    type: 'FIBRE',
+    capacity: '100 Gbps Core Backbone Ring',
+    coords: [
+      [-15.3875, 28.3228], // Lusaka Central Hub ZM-001
+      [-14.4469, 28.4464], // Kabwe Rural Outpost ZM-003
+      [-12.9688, 28.6366], // Ndola Regional Hub ZM-002
+    ],
+    defaultColor: '#0ea5e9', // Sky blue
+  },
+  {
+    id: 'route-copperbelt-ring',
+    name: 'Ndola ↔ Kitwe Mining Optical Metro Ring',
+    type: 'FIBRE',
+    capacity: '40 Gbps Metro Ring (99.99% SLA)',
+    coords: [
+      [-12.9688, 28.6366], // Ndola ZM-002
+      [-12.8024, 28.2132], // Kitwe Industrial Hub ZM-006
+    ],
+    defaultColor: '#10b981', // Emerald green
+  },
+  {
+    id: 'route-solwezi-mining',
+    name: 'Kitwe ↔ Solwezi Kansanshi Mining Backhaul',
+    type: 'MICROWAVE',
+    capacity: '10 Gbps Long-Haul Radio Relay',
+    coords: [
+      [-12.8024, 28.2132], // Kitwe ZM-006
+      [-12.1688, 26.3894], // Solwezi Outskirts ZM-004
+    ],
+    defaultColor: '#f59e0b', // Amber
+  },
+  {
+    id: 'route-livingstone-primary',
+    name: 'Lusaka ↔ Livingstone Border Transit Trunk',
+    type: 'FIBRE',
+    capacity: '10 Gbps Terrestrial 4G/Fibre Trunk',
+    coords: [
+      [-15.3875, 28.3228], // Lusaka ZM-001
+      [-16.6, 27.1],       // Southern Transit Relay
+      [-17.8419, 25.8544], // Livingstone Border ZM-005
+    ],
+    defaultColor: '#0ea5e9', // Sky blue
+  },
+  {
+    id: 'route-livingstone-satellite',
+    name: 'Eutelsat OneWeb LEO Satellite Beam (NTN)',
+    type: 'SATELLITE',
+    capacity: '250 Mbps CIR Low-Latency LEO Space Relay',
+    coords: [
+      [-15.3875, 28.3228], // Lusaka Gateway
+      [-16.4, 25.9],       // LEO Space Segment Arc
+      [-17.8419, 25.8544], // Livingstone Terminal ZM-005
+    ],
+    defaultColor: '#a855f7', // Purple
+  },
+];
 
 // Controller component to smoothly fly to selected site on the map or recenter
 const MapController: React.FC<{ selectedSite: Site | null; resetCount: number }> = ({
@@ -101,6 +173,7 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
   sites,
   selectedSite,
   onSelectSite,
+  isFailoverActive = false,
 }) => {
   const [mapTheme, setMapTheme] = React.useState<'dark' | 'standard'>('dark');
   const [resetCount, setResetCount] = React.useState<number>(0);
@@ -166,6 +239,75 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
         />
 
         <MapController selectedSite={selectedSite} resetCount={resetCount} />
+
+        {/* Converged Transport Backhaul Lines (Fibre, Microwave, Satellite) */}
+        {BACKBONE_ROUTES.flatMap((route) => {
+          const isCut = route.id === 'route-livingstone-primary' && isFailoverActive;
+          const isSatActive = route.id === 'route-livingstone-satellite' && isFailoverActive;
+          const isSatStandby = route.id === 'route-livingstone-satellite' && !isFailoverActive;
+
+          let color = route.defaultColor;
+          let weight = 3.5;
+          let opacity = 0.85;
+          let dashArray: string | undefined = undefined;
+
+          if (isCut) {
+            color = '#ef4444';
+            dashArray = '8, 8';
+            weight = 4;
+            opacity = 1.0;
+          } else if (isSatActive) {
+            color = '#c084fc';
+            dashArray = '6, 6';
+            weight = 4.5;
+            opacity = 1.0;
+          } else if (isSatStandby) {
+            color = '#818cf8';
+            dashArray = '4, 8';
+            weight = 2;
+            opacity = 0.4;
+          }
+
+          return LONGITUDE_OFFSETS.map((offset) => {
+            const offsetCoords = route.coords.map(([lat, lng]) => [lat, lng + offset] as [number, number]);
+            return (
+              <Polyline
+                key={`${route.id}-w${offset}`}
+                positions={offsetCoords}
+                pathOptions={{
+                  color,
+                  weight,
+                  opacity,
+                  dashArray,
+                }}
+              >
+                <Tooltip sticky direction="top" opacity={0.95}>
+                  <div className="text-xs font-semibold px-1.5 py-1">
+                    <div className="text-white font-bold">{route.name}</div>
+                    <div className="text-slate-300 font-normal mt-0.5">
+                      Type: <span className="font-semibold text-sky-400">{route.type}</span> &bull; {route.capacity}
+                    </div>
+                    {isCut && (
+                      <div className="text-rose-400 font-bold mt-1 flex items-center gap-1">
+                        <span>⚠️ SEVERED: Primary terrestrial link cut</span>
+                      </div>
+                    )}
+                    {isSatActive && (
+                      <div className="text-purple-300 font-bold mt-1 flex items-center gap-1">
+                        <span>⚡ SDN ACTIVE: Live traffic routed over Satellite VSAT</span>
+                      </div>
+                    )}
+                    {isSatStandby && (
+                      <div className="text-indigo-300 text-[10px] mt-0.5">
+                        Hot-Standby Redundant Satellite NTN Path
+                      </div>
+                    )}
+                  </div>
+                </Tooltip>
+              </Polyline>
+            );
+          });
+        })}
 
         {sites.flatMap((site) => {
           const isSelected = selectedSite?.id === site.id;
@@ -274,6 +416,40 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
             <span className="text-slate-300">Critical (Link outage / Loss &gt; 8%)</span>
+          </div>
+        </div>
+
+        {/* Converged Transport Backhaul Legend */}
+        <div className="font-semibold text-slate-300 mt-2.5 pt-2 border-t border-slate-800 mb-1.5 flex items-center justify-between">
+          <span>Transport Links</span>
+          {isFailoverActive && (
+            <span className="text-[9px] text-amber-400 font-bold px-1.5 py-0.5 bg-amber-950/80 rounded border border-amber-500/40">
+              FAILOVER LIVE
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col gap-1 text-[11px]">
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-1 bg-sky-400 rounded-full inline-block"></span>
+            <span className="text-slate-300">DWDM Fibre Backbone (100G)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-1 bg-emerald-400 rounded-full inline-block"></span>
+            <span className="text-slate-300">Metro Mining Ring (40G)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-4 h-1 bg-amber-400 rounded-full inline-block"></span>
+            <span className="text-slate-300">Long-Haul Microwave Relay</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-4 h-0.5 border-b-2 border-dashed inline-block ${
+                isFailoverActive ? 'border-purple-300 animate-pulse' : 'border-purple-400'
+              }`}
+            ></span>
+            <span className={isFailoverActive ? 'text-purple-300 font-bold' : 'text-slate-300'}>
+              Satellite NTN (OneWeb) {isFailoverActive ? '● [ACTIVE]' : '● [Standby]'}
+            </span>
           </div>
         </div>
       </div>

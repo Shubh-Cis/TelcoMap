@@ -19,6 +19,7 @@ import {
   Truck,
   ArrowRightLeft,
   Lock,
+  Clock,
 } from 'lucide-react';
 import { Site, ConnectivityTechnology, AiDiagnosisResult } from '../types/network';
 import { networkApi } from '../services/networkApi';
@@ -57,6 +58,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = ({
   const [errorAi, setErrorAi] = useState<string | null>(null);
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState<boolean>(false);
   const [internalFailover, setInternalFailover] = useState<boolean>(false);
+  const [showAuditTrail, setShowAuditTrail] = useState<boolean>(false);
 
   const isFailoverActive = externalFailover !== undefined ? externalFailover : internalFailover;
 
@@ -73,6 +75,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = ({
   useEffect(() => {
     setDiagnosis(null);
     setErrorAi(null);
+    setShowAuditTrail(false);
     if (onFailoverToggle) {
       onFailoverToggle(false);
     } else {
@@ -418,6 +421,87 @@ Synthesized by: ${diagnosis.modelUsed}
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Phase 6: Interactive Incident & Failover Audit Timeline */}
+          <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <Clock className="w-3.5 h-3.5 text-sky-400" />
+                Incident &amp; Failover Audit Timeline
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAuditTrail(!showAuditTrail)}
+                className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-800 transition-colors cursor-pointer"
+              >
+                {isFailoverActive || showAuditTrail ? 'Hide Milestones' : 'View Milestones'}
+              </button>
+            </div>
+
+            {isFailoverActive || showAuditTrail ? (
+              <div className="relative pl-6 space-y-3 text-xs before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800 animate-in fade-in duration-200">
+                {/* Event 1 */}
+                <div className="relative">
+                  <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-950/80"></span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-rose-300">Carrier Signal Loss Detected</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+0.00s</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">100% optical loss on Primary 4G/Fibre transceiver port.</p>
+                </div>
+
+                {/* Event 2 */}
+                <div className="relative">
+                  <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-950/80"></span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-amber-300">BFD Micro-Probe Timeout (150ms)</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+0.15s</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">3 consecutive heartbeats dropped. Primary interface declared DEAD.</p>
+                </div>
+
+                {/* Event 3 */}
+                <div className="relative">
+                  <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-950/80"></span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-emerald-300">Autonomous SDN Satellite Cutover</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+0.42s</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">Forwarding table repointed to Eutelsat OneWeb dish. Zero transaction loss.</p>
+                </div>
+
+                {/* Event 4 */}
+                <div className="relative">
+                  <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 ring-4 ring-sky-950/80"></span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-sky-300">AIOps Root-Cause Diagnostic Completed</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+14.0s</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">Incident ticket INC-2026-ZM005 drafted with 95% confidence score.</p>
+                </div>
+
+                {/* Event 5 */}
+                <div className="relative">
+                  <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-purple-500 ring-4 ring-purple-950/80"></span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-semibold text-purple-300">OSS Field Work-Order Staged</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+32.0s</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">4x4 mobile unit WO-2026-6706 assigned with Cisco SFP+ and OTDR tester.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="py-1 text-xs text-slate-400 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>Continuous Telemetry: Heartbeat probes running every 10s &bull; All links nominal.</span>
+                </div>
+                <span className="text-[10px] font-mono text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30">
+                  HEALTHY
+                </span>
+              </div>
+            )}
           </div>
 
           {/* BSS Enterprise SLA Contract Governance */}

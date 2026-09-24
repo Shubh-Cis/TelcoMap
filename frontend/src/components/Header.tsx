@@ -10,6 +10,7 @@ interface HeaderProps {
   onViewChange: (view: 'map' | 'topology' | 'table') => void;
   onOpenAddSite: () => void;
   onOpenWeeklyReport: () => void;
+  onToggleGuidedTour: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
   onViewChange,
   onOpenAddSite,
   onOpenWeeklyReport,
+  onToggleGuidedTour,
 }) => {
   const isHealthy = health?.status === 'ok' && health?.database === 'connected';
 
@@ -132,6 +134,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
             <span>Weekly AI Report</span>
+          </button>
+
+          {/* Guided Executive Pitch Tour Action */}
+          <button
+            onClick={onToggleGuidedTour}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all cursor-pointer border border-amber-300/40"
+            title="Start Guided Executive Pitch & Demo Mode"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-slate-950" />
+            <span>Pitch Tour</span>
           </button>
 
           {/* Add Site Action */}

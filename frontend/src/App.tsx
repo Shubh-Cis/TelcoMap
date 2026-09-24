@@ -8,6 +8,7 @@ import { NetworkTopology } from './components/NetworkTopology';
 import { AddSiteModal } from './components/AddSiteModal';
 import { WeeklyReportModal } from './components/WeeklyReportModal';
 import { RadarWidget } from './components/RadarWidget';
+import { GuidedDemoBar, TOUR_STEPS } from './components/GuidedDemoBar';
 import { networkApi } from './services/networkApi';
 import { Site, NetworkSummary as SummaryType, TopologyData, SystemHealth, OperationalStatus } from './types/network';
 import { Info, AlertCircle } from 'lucide-react';
@@ -19,6 +20,10 @@ export function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState<boolean>(false);
   const [isFailoverActive, setIsFailoverActive] = useState<boolean>(false);
+
+  // Phase 11: Guided Executive Pitch Tour state
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
+  const [tourStep, setTourStep] = useState<number>(1);
 
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [summary, setSummary] = useState<SummaryType | null>(null);
@@ -87,6 +92,28 @@ export function App() {
     loadNetworkData();
   };
 
+  const handleToggleTour = () => {
+    const next = !isTourOpen;
+    setIsTourOpen(next);
+    if (next) {
+      setTourStep(1);
+      setActiveView('map');
+    }
+  };
+
+  const handleTourStepChange = (step: number) => {
+    setTourStep(step);
+    setActiveView('map');
+    if (step >= 2) {
+      const livingstone = sites.find((s) => s.siteCode === 'ZM-005') || sites[0];
+      if (livingstone) setSelectedSite(livingstone);
+      setTimeout(() => {
+        const inspector = document.getElementById('site-inspector-panel');
+        if (inspector) inspector.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top NOC Header */}
@@ -98,6 +125,7 @@ export function App() {
         onViewChange={setActiveView}
         onOpenAddSite={() => setIsAddModalOpen(true)}
         onOpenWeeklyReport={() => setIsWeeklyModalOpen(true)}
+        onToggleGuidedTour={handleToggleTour}
       />
 
       {/* Main Content Area */}
@@ -238,6 +266,16 @@ export function App() {
           <span className="text-slate-500">Telecom Operations &amp; Intelligence Platform (Zambia Demo Network)</span>
         </div>
       </footer>
+
+      {/* Phase 11: 1-Click Guided Pitch & Demo Mode */}
+      <GuidedDemoBar
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        currentStep={tourStep}
+        onNextStep={() => handleTourStepChange(Math.min(tourStep + 1, TOUR_STEPS.length))}
+        onPrevStep={() => handleTourStepChange(Math.max(tourStep - 1, 1))}
+        onJumpToStep={handleTourStepChange}
+      />
     </div>
   );
 }

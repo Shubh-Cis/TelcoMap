@@ -13,9 +13,10 @@ export class RadarController {
   @Get('summary')
   async getSummary(
     @Query('country') country?: string,
+    @Query('range') range?: string,
     @Query('refresh') refresh?: string,
   ): Promise<RadarTelemetrySummary> {
-    return this.radarService.getRadarSummary(country || 'ZM', refresh === 'true');
+    return this.radarService.getRadarSummary(country || 'ZM', range || '7d', refresh === 'true');
   }
 
   /**

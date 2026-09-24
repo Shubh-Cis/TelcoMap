@@ -110,8 +110,8 @@ export const networkApi = {
   /**
    * Fetches real-time internet quality index & outage telemetry from Cloudflare Radar
    */
-  async getRadarSummary(country = 'ZM', refresh = false): Promise<RadarTelemetrySummary> {
-    const params = new URLSearchParams({ country });
+  async getRadarSummary(country = 'ZM', range = '7d', refresh = false): Promise<RadarTelemetrySummary> {
+    const params = new URLSearchParams({ country, range });
     if (refresh) params.append('refresh', 'true');
     const res = await fetch(`${API_BASE}/radar/summary?${params.toString()}`);
     return handleResponse<RadarTelemetrySummary>(res);

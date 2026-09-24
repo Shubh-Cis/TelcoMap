@@ -17,15 +17,16 @@ import {
 
 export function RadarWidget() {
   const [data, setData] = useState<RadarTelemetrySummary | null>(null);
+  const [timeRange, setTimeRange] = useState<'7d' | '1d'>('7d');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
-  const fetchRadarData = async (refresh = false) => {
+  const fetchRadarData = async (refresh = false, range = timeRange) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await networkApi.getRadarSummary('ZM', refresh);
+      const res = await networkApi.getRadarSummary('ZM', range, refresh);
       setData(res);
     } catch (err: any) {
       console.error('Failed to load Cloudflare Radar data:', err);
@@ -35,8 +36,13 @@ export function RadarWidget() {
     }
   };
 
+  const handleRangeChange = (newRange: '7d' | '1d') => {
+    setTimeRange(newRange);
+    fetchRadarData(false, newRange);
+  };
+
   useEffect(() => {
-    fetchRadarData();
+    fetchRadarData(false, timeRange);
   }, []);
 
   const getCauseBadge = (cause: string) => {
@@ -121,6 +127,32 @@ export function RadarWidget() {
             </div>
           )}
 
+          {/* Time Range Toggle */}
+          <div className="flex items-center rounded-lg bg-slate-800 p-0.5 border border-slate-700/60 text-xs">
+            <button
+              onClick={() => handleRangeChange('1d')}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                timeRange === '1d'
+                  ? 'bg-sky-600 text-white font-semibold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="View 24-Hour Active Telemetry"
+            >
+              24H
+            </button>
+            <button
+              onClick={() => handleRangeChange('7d')}
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors ${
+                timeRange === '7d'
+                  ? 'bg-sky-600 text-white font-semibold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="View 7-Day Baseline Telemetry"
+            >
+              7D
+            </button>
+          </div>
+
           {/* Refresh Button */}
           <button
             onClick={() => fetchRadarData(true)}
@@ -163,7 +195,7 @@ export function RadarWidget() {
                     Download Bandwidth (Median)
                   </span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                    IQI 7D
+                    IQI {timeRange.toUpperCase()}
                   </span>
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -303,10 +335,10 @@ export function RadarWidget() {
           <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/50 text-[11px] text-slate-500">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              Source: {data?.source || 'Cloudflare Radar'} &bull; Cache TTL: 5 min
+              Source: {data?.source || 'Cloudflare Radar'} &bull; {data?.cached ? 'Memory Cache (<5ms)' : 'Live Edge Sync'}
             </span>
-            <span>
-              Last Updated: {data ? new Date(data.lastUpdated).toLocaleTimeString() : 'Syncing...'}
+            <span title="Cloudflare nationwide IQI calculation timestamp">
+              Cloudflare Batch Sync: {data ? new Date(data.lastUpdated).toLocaleTimeString() : 'Syncing...'}
             </span>
           </div>
         </div>

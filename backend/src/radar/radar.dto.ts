@@ -30,4 +30,5 @@ export interface RadarTelemetrySummary {
   localOutagesCount: number;
   recentDisruptions: RadarOutageItem[];
   cached: boolean;
+  dateRange: string;
 }

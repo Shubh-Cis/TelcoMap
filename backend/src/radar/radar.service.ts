@@ -51,8 +51,9 @@ export class RadarService {
    * Fetches real-time internet quality index (IQI) metrics & outage annotations
    * for a target country (default: 'ZM' for Zambia) and regional backbones.
    */
-  async getRadarSummary(country = 'ZM', forceRefresh = false): Promise<RadarTelemetrySummary> {
-    const cacheKey = `radar_summary_${country.toUpperCase()}`;
+  async getRadarSummary(country = 'ZM', range = '7d', forceRefresh = false): Promise<RadarTelemetrySummary> {
+    const validRange = range === '1d' ? '1d' : '7d';
+    const cacheKey = `radar_summary_${country.toUpperCase()}_${validRange}`;
     const now = Date.now();
 
     if (!forceRefresh && this.cache.has(cacheKey)) {
@@ -65,11 +66,11 @@ export class RadarService {
     const token = process.env.CLOUDFLARE_RADAR_TOKEN?.trim();
     if (!token) {
       this.logger.warn('No CLOUDFLARE_RADAR_TOKEN configured; returning sovereign fallback baseline.');
-      return this.getFallbackBaseline(country);
+      return this.getFallbackBaseline(country, validRange);
     }
 
     try {
-      this.logger.log(`Querying Cloudflare Radar API for country ${country}...`);
+      this.logger.log(`Querying Cloudflare Radar API for country ${country} (${validRange})...`);
       const headers = {
         Authorization: `Bearer ${token}`,
         Accept: 'application/json',
@@ -77,9 +78,9 @@ export class RadarService {
 
       // Query metrics and outages in parallel
       const [bandwidthRes, latencyRes, dnsRes, localOutagesRes, globalOutagesRes] = await Promise.all([
-        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=BANDWIDTH&dateRange=7d`, { headers }),
-        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=LATENCY&dateRange=7d`, { headers }),
-        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=DNS&dateRange=7d`, { headers }),
+        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=BANDWIDTH&dateRange=${validRange}`, { headers }),
+        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=LATENCY&dateRange=${validRange}`, { headers }),
+        fetch(`https://api.cloudflare.com/client/v4/radar/quality/iqi/summary?location=${country}&metric=DNS&dateRange=${validRange}`, { headers }),
         fetch(`https://api.cloudflare.com/client/v4/radar/annotations/outages?location=${country}&limit=5`, { headers }),
         fetch(`https://api.cloudflare.com/client/v4/radar/annotations/outages?limit=5`, { headers }),
       ]);
@@ -134,7 +135,7 @@ export class RadarService {
         countryCode: country.toUpperCase(),
         countryName: country.toUpperCase() === 'ZM' ? 'Zambia' : country.toUpperCase(),
         source: 'Live Cloudflare Radar Telemetry',
-        lastUpdated: new Date().toISOString(),
+        lastUpdated: bwData?.result?.meta?.lastUpdated || new Date().toISOString(),
         status,
         statusMessage,
         bandwidth,
@@ -143,6 +144,7 @@ export class RadarService {
         localOutagesCount: localOutages.length,
         recentDisruptions,
         cached: false,
+        dateRange: validRange,
       };
 
       // Store in memory cache
@@ -154,7 +156,7 @@ export class RadarService {
       return result;
     } catch (err: any) {
       this.logger.error(`Failed to fetch Cloudflare Radar data: ${err.message}. Using fallback baseline.`);
-      return this.getFallbackBaseline(country);
+      return this.getFallbackBaseline(country, validRange);
     }
   }
 
@@ -179,7 +181,7 @@ export class RadarService {
     };
   }
 
-  private getFallbackBaseline(country: string): RadarTelemetrySummary {
+  private getFallbackBaseline(country: string, range = '7d'): RadarTelemetrySummary {
     return {
       countryCode: country.toUpperCase(),
       countryName: country.toUpperCase() === 'ZM' ? 'Zambia' : country.toUpperCase(),
@@ -212,6 +214,7 @@ export class RadarService {
         },
       ],
       cached: true,
+      dateRange: range,
     };
   }
 }

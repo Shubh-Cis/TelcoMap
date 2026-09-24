@@ -143,21 +143,24 @@ export function App() {
 
         {/* VIEW 1: Interactive Geographic NOC Map */}
         {activeView === 'map' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+          <div className="space-y-6">
+            {/* Full-Width Interactive Geographic Map */}
+            <div className="w-full">
               <NetworkMap
                 sites={sites.filter((s) => selectedFilter === 'ALL' || s.status === selectedFilter)}
                 selectedSite={selectedSite}
                 onSelectSite={setSelectedSite}
               />
             </div>
-            <div className="lg:col-span-1 rounded-xl transition-all duration-300" id="site-inspector-panel">
+
+            {/* Site Details Panel Directly Below Map */}
+            <div className="w-full rounded-xl transition-all duration-300" id="site-inspector-panel">
               {selectedSite ? (
                 <SiteDetails site={selectedSite} onClose={() => setSelectedSite(null)} />
               ) : (
-                <div className="h-full min-h-[300px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
-                  <p className="font-semibold mb-1">No Site Selected</p>
-                  <p>Click on any marker on the map to inspect its network links and devices.</p>
+                <div className="w-full min-h-[140px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
+                  <p className="font-semibold mb-1 text-slate-300">No Site Selected</p>
+                  <p>Click on any marker on the map above to inspect its live network links, AI diagnostics, BSS contract, and hardware devices.</p>
                 </div>
               )}
             </div>

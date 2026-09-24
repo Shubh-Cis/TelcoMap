@@ -157,3 +157,30 @@ export interface RadarTelemetrySummary {
   cached: boolean;
   dateRange?: string;
 }
+
+export interface EnterpriseBssProfile {
+  clientName: string;
+  industry: string;
+  contractTier: string;
+  monthlyRevenueUsd: number;
+  slaTargetPercent: number;
+  currentSlaPercent: number;
+  penaltyRiskUsd: number;
+  dataSovereignty: string;
+  lawfulInterceptionStatus: string;
+  zictaLicense: string;
+}
+
+export interface OssWorkOrder {
+  orderId: string;
+  siteCode: string;
+  siteName: string;
+  priority: 'P1 - CRITICAL' | 'P2 - HIGH' | 'P3 - NORMAL';
+  assignedCrew: string;
+  vehicle: string;
+  truckRollCostUsd: number;
+  estimatedArrival: string;
+  requiredSpares: string[];
+  status: 'PENDING_AUTHORIZATION' | 'DISPATCHED_EN_ROUTE';
+  createdAt: string;
+}

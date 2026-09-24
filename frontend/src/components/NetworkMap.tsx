@@ -9,8 +9,11 @@ interface NetworkMapProps {
   onSelectSite: (site: Site) => void;
 }
 
-// Controller component to smoothly fly to selected site on the map
-const MapController: React.FC<{ selectedSite: Site | null }> = ({ selectedSite }) => {
+// Controller component to smoothly fly to selected site on the map or recenter
+const MapController: React.FC<{ selectedSite: Site | null; resetCount: number }> = ({
+  selectedSite,
+  resetCount,
+}) => {
   const map = useMap();
 
   useEffect(() => {
@@ -20,6 +23,14 @@ const MapController: React.FC<{ selectedSite: Site | null }> = ({ selectedSite }
       });
     }
   }, [selectedSite, map]);
+
+  useEffect(() => {
+    if (resetCount > 0) {
+      map.flyTo([-14.5, 27.8], 6, {
+        duration: 1.0,
+      });
+    }
+  }, [resetCount, map]);
 
   return null;
 };
@@ -92,15 +103,26 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
   onSelectSite,
 }) => {
   const [mapTheme, setMapTheme] = React.useState<'dark' | 'standard'>('dark');
+  const [resetCount, setResetCount] = React.useState<number>(0);
 
   // Centered roughly over Zambia (Lusaka - Ndola corridor)
   const defaultCenter: [number, number] = [-14.5, 27.8];
   const defaultZoom = 6;
 
+  // Render markers across adjacent world copies so zooming out or dragging left/right never loses pinpoints
+  const LONGITUDE_OFFSETS = [0, -360, 360];
+
   return (
     <div className="relative w-full h-[540px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl bg-slate-950">
-      {/* Map Theme Toggle (100% Free OpenStreetMap - No API Key Needed) */}
-      <div className="absolute top-3 right-3 z-20 bg-slate-900/95 backdrop-blur-md p-1 rounded-lg border border-slate-700/80 text-xs shadow-xl pointer-events-auto flex items-center gap-1">
+      {/* Map Control Toolbar */}
+      <div className="absolute top-3 right-3 z-20 bg-slate-900/95 backdrop-blur-md p-1 rounded-lg border border-slate-700/80 text-xs shadow-xl pointer-events-auto flex items-center gap-1.5">
+        <button
+          onClick={() => setResetCount((c) => c + 1)}
+          className="px-2.5 py-1 rounded text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800/90 hover:bg-slate-700 transition-colors flex items-center gap-1 border border-slate-700/60"
+          title="Recenter Map View on Zambia"
+        >
+          <span>🇿🇲 Recenter</span>
+        </button>
         <button
           onClick={() => setMapTheme('dark')}
           className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
@@ -128,6 +150,9 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
+        minZoom={4}
+        maxZoom={18}
+        worldCopyJump={true}
         className="w-full h-full z-10"
         scrollWheelZoom={true}
       >
@@ -140,14 +165,14 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
           maxZoom={19}
         />
 
-        <MapController selectedSite={selectedSite} />
+        <MapController selectedSite={selectedSite} resetCount={resetCount} />
 
-        {sites.map((site) => {
+        {sites.flatMap((site) => {
           const isSelected = selectedSite?.id === site.id;
-          return (
+          return LONGITUDE_OFFSETS.map((offset) => (
             <Marker
-              key={site.id}
-              position={[site.latitude, site.longitude]}
+              key={`${site.id}-w${offset}`}
+              position={[site.latitude, site.longitude + offset]}
               icon={createStatusIcon(site.status, isSelected)}
               eventHandlers={{
                 click: () => onSelectSite(site),
@@ -230,7 +255,7 @@ export const NetworkMap: React.FC<NetworkMapProps> = ({
                 </div>
               </Popup>
             </Marker>
-          );
+          ));
         })}
       </MapContainer>
 

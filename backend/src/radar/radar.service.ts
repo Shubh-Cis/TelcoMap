@@ -10,7 +10,7 @@ interface CacheEntry {
 export class RadarService {
   private readonly logger = new Logger(RadarService.name);
   private cache: Map<string, CacheEntry> = new Map();
-  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache
+  private readonly CACHE_TTL_MS = 20 * 1000; // 20 seconds cache for rapid live sync
 
   /**
    * Verifies the configured Cloudflare API token

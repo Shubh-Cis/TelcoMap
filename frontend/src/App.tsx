@@ -129,7 +129,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 md:p-6 max-w-[1760px] mx-auto w-full">
         {/* Error Alert if API is down */}
         {error && (
           <div className="mb-4 p-4 rounded-xl bg-rose-950/50 border border-rose-500/50 text-rose-300 flex items-center justify-between">
@@ -150,9 +150,9 @@ export function App() {
         )}
 
         {/* Phase Indicator & Architecture Context Banner */}
-        <div className="mb-6 p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3 text-xs text-slate-400">
+        <div className="mb-6 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3 text-xs text-slate-400">
           <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <span className="font-semibold text-slate-200">
               Telecom Network Feature Active:
             </span>{' '}
@@ -160,79 +160,92 @@ export function App() {
           </div>
         </div>
 
-        {/* Executive Metric Summary */}
-        <NetworkSummary
-          summary={summary}
-          selectedFilter={selectedFilter}
-          onSelectFilter={setSelectedFilter}
-        />
+        {/* 2-Column Responsive Layout: Left Sticky Radar + Right Main Operations */}
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* LEFT SIDEBAR: Regional Internet & ISP Radar (Always Visible, Sticky) */}
+          <aside className="w-full lg:w-[350px] xl:w-[380px] shrink-0 lg:sticky lg:top-20 z-20">
+            <RadarWidget />
+          </aside>
 
-        {/* Regional Telemetry & ISP Outage Radar (Cloudflare Radar) */}
-        <RadarWidget />
-
-        {/* VIEW 1: Interactive Geographic NOC Map */}
-        {activeView === 'map' && (
-          <div className="space-y-6">
-            {/* Full-Width Interactive Geographic Map */}
-            <div className="w-full">
-              <NetworkMap
-                sites={sites.filter((s) => selectedFilter === 'ALL' || s.status === selectedFilter)}
-                selectedSite={selectedSite}
-                onSelectSite={setSelectedSite}
-                isFailoverActive={isFailoverActive}
-              />
-            </div>
-
-            {/* Site Details Panel Directly Below Map */}
-            <div className="w-full rounded-xl transition-all duration-300" id="site-inspector-panel">
-              {selectedSite ? (
-                <SiteDetails
-                  site={selectedSite}
-                  onClose={() => setSelectedSite(null)}
-                  isFailoverActive={isFailoverActive}
-                  onFailoverToggle={setIsFailoverActive}
-                />
-              ) : (
-                <div className="w-full min-h-[140px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
-                  <p className="font-semibold mb-1 text-slate-300">No Site Selected</p>
-                  <p>Click on any marker on the map above to inspect its live network links, AI diagnostics, BSS contract, and hardware devices.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* VIEW 2: Visual Network Topology */}
-        {activeView === 'topology' && (
-          <NetworkTopology
-            topology={topology}
-            sites={sites}
-            onSelectSite={(site) => {
-              setSelectedSite(site);
-              setActiveView('map');
-            }}
-          />
-        )}
-
-        {/* VIEW 3: Site Inventory Table */}
-        {activeView === 'table' && (
-          <div className="space-y-6">
-            <SiteTable
-              sites={sites}
+          {/* RIGHT COLUMN: Executive Metrics + Map + Site Inspector / Other Views */}
+          <div className="flex-1 min-w-0 w-full space-y-6">
+            {/* Executive Metric Summary */}
+            <NetworkSummary
+              summary={summary}
               selectedFilter={selectedFilter}
               onSelectFilter={setSelectedFilter}
-              onSelectSite={(site) => {
-                setSelectedSite(site);
-                setActiveView('map');
-              }}
-              selectedSiteId={selectedSite?.id}
-              onOpenAddSite={() => setIsAddModalOpen(true)}
             />
-            {selectedSite && (
-              <SiteDetails site={selectedSite} onClose={() => setSelectedSite(null)} />
+
+            {/* VIEW 1: Interactive Geographic NOC Map */}
+            {activeView === 'map' && (
+              <div className="space-y-6">
+                {/* Full-Width Interactive Geographic Map */}
+                <div className="w-full">
+                  <NetworkMap
+                    sites={sites.filter((s) => selectedFilter === 'ALL' || s.status === selectedFilter)}
+                    selectedSite={selectedSite}
+                    onSelectSite={setSelectedSite}
+                    isFailoverActive={isFailoverActive}
+                  />
+                </div>
+
+                {/* Site Details Panel Directly Below Map */}
+                <div className="w-full rounded-xl transition-all duration-300" id="site-inspector-panel">
+                  {selectedSite ? (
+                    <SiteDetails
+                      site={selectedSite}
+                      onClose={() => setSelectedSite(null)}
+                      isFailoverActive={isFailoverActive}
+                      onFailoverToggle={setIsFailoverActive}
+                    />
+                  ) : (
+                    <div className="w-full min-h-[140px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
+                      <p className="font-semibold mb-1 text-slate-300">No Site Selected</p>
+                      <p>Click on any marker on the map above to inspect its live network links, AI diagnostics, BSS contract, and hardware devices.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 2: Visual Network Topology */}
+            {activeView === 'topology' && (
+              <NetworkTopology
+                topology={topology}
+                sites={sites}
+                onSelectSite={(site) => {
+                  setSelectedSite(site);
+                  setActiveView('map');
+                }}
+              />
+            )}
+
+            {/* VIEW 3: Site Inventory Table */}
+            {activeView === 'table' && (
+              <div className="space-y-6">
+                <SiteTable
+                  sites={sites}
+                  selectedFilter={selectedFilter}
+                  onSelectFilter={setSelectedFilter}
+                  onSelectSite={(site) => {
+                    setSelectedSite(site);
+                    setActiveView('map');
+                  }}
+                  selectedSiteId={selectedSite?.id}
+                  onOpenAddSite={() => setIsAddModalOpen(true)}
+                />
+                {selectedSite && (
+                  <SiteDetails
+                    site={selectedSite}
+                    onClose={() => setSelectedSite(null)}
+                    isFailoverActive={isFailoverActive}
+                    onFailoverToggle={setIsFailoverActive}
+                  />
+                )}
+              </div>
             )}
           </div>
-        )}
+        </div>
       </main>
 
       {/* Provision New Site Modal */}

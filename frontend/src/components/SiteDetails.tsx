@@ -20,6 +20,7 @@ import {
   ArrowRightLeft,
   Lock,
   Clock,
+  Play,
 } from 'lucide-react';
 import { Site, ConnectivityTechnology, AiDiagnosisResult } from '../types/network';
 import { networkApi } from '../services/networkApi';
@@ -59,11 +60,33 @@ export const SiteDetails: React.FC<SiteDetailsProps> = ({
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState<boolean>(false);
   const [internalFailover, setInternalFailover] = useState<boolean>(false);
   const [showAuditTrail, setShowAuditTrail] = useState<boolean>(false);
+  const [drillStep, setDrillStep] = useState<number>(5);
+  const [isDrillRunning, setIsDrillRunning] = useState<boolean>(false);
+  const [drillStartTime, setDrillStartTime] = useState<string>('');
 
   const isFailoverActive = externalFailover !== undefined ? externalFailover : internalFailover;
 
+  const startLiveFailoverDrill = () => {
+    setIsDrillRunning(true);
+    setDrillStep(1);
+    setShowAuditTrail(true);
+    const now = new Date();
+    setDrillStartTime(now.toLocaleTimeString() + '.' + String(now.getMilliseconds()).padStart(3, '0'));
+
+    setTimeout(() => setDrillStep(2), 250);
+    setTimeout(() => setDrillStep(3), 550);
+    setTimeout(() => setDrillStep(4), 1000);
+    setTimeout(() => {
+      setDrillStep(5);
+      setIsDrillRunning(false);
+    }, 1500);
+  };
+
   const handleToggleFailover = () => {
     const next = !isFailoverActive;
+    if (next) {
+      startLiveFailoverDrill();
+    }
     if (onFailoverToggle) {
       onFailoverToggle(next);
     } else {
@@ -76,6 +99,8 @@ export const SiteDetails: React.FC<SiteDetailsProps> = ({
     setDiagnosis(null);
     setErrorAi(null);
     setShowAuditTrail(false);
+    setDrillStep(5);
+    setIsDrillRunning(false);
     if (onFailoverToggle) {
       onFailoverToggle(false);
     } else {
@@ -93,6 +118,7 @@ export const SiteDetails: React.FC<SiteDetailsProps> = ({
   const primaryBadge = getTechBadge(site.primaryTech);
   const backupBadge = site.backupTech ? getTechBadge(site.backupTech) : null;
   const bss = getSiteBssProfile(site, isFailoverActive);
+  const workOrder = generateOssWorkOrder(site);
 
   const handleRunDiagnosis = async () => {
     try {
@@ -423,72 +449,110 @@ Synthesized by: ${diagnosis.modelUsed}
             </div>
           </div>
 
-          {/* Phase 6: Interactive Incident & Failover Audit Timeline */}
+          {/* Phase 6: Dynamic Incident & Failover Audit Timeline */}
           <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-              <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                <Clock className="w-3.5 h-3.5 text-sky-400" />
-                Incident &amp; Failover Audit Timeline
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowAuditTrail(!showAuditTrail)}
-                className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-800 transition-colors cursor-pointer"
-              >
-                {isFailoverActive || showAuditTrail ? 'Hide Milestones' : 'View Milestones'}
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                  <Clock className="w-3.5 h-3.5 text-sky-400" />
+                  Incident &amp; Failover Audit Timeline
+                </span>
+                {isFailoverActive && (
+                  <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-500/40 animate-pulse">
+                    SDN ACTIVE (420ms)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={startLiveFailoverDrill}
+                  disabled={isDrillRunning}
+                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/40 flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+                  title="Simulate sub-second failover sequence live"
+                >
+                  {isDrillRunning ? (
+                    <>
+                      <RefreshCw className="w-2.5 h-2.5 animate-spin text-sky-400" />
+                      <span>Simulating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-2.5 h-2.5 text-sky-400 fill-sky-400" />
+                      <span>Run Live Drill</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAuditTrail(!showAuditTrail)}
+                  className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-sky-400 border border-slate-800 transition-colors cursor-pointer"
+                >
+                  {isFailoverActive || showAuditTrail ? 'Hide' : 'View'}
+                </button>
+              </div>
             </div>
 
             {isFailoverActive || showAuditTrail ? (
               <div className="relative pl-6 space-y-3 text-xs before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-800 animate-in fade-in duration-200">
                 {/* Event 1 */}
-                <div className="relative">
+                <div className={`relative transition-opacity duration-300 ${drillStep >= 1 ? 'opacity-100' : 'opacity-30'}`}>
                   <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-rose-500 ring-4 ring-rose-950/80"></span>
                   <div className="flex items-baseline justify-between">
                     <span className="font-semibold text-rose-300">Carrier Signal Loss Detected</span>
-                    <span className="text-[10px] font-mono text-slate-500">T+0.00s</span>
+                    <span className="text-[10px] font-mono text-slate-500">T+0.00s {drillStartTime ? `(${drillStartTime})` : ''}</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">100% optical loss on Primary 4G/Fibre transceiver port.</p>
+                  <p className="text-[11px] text-slate-400">
+                    100% optical loss on Primary {primaryBadge.label} transceiver ({site.devices[0]?.name || 'Port 1/0/1'}).
+                  </p>
                 </div>
 
                 {/* Event 2 */}
-                <div className="relative">
+                <div className={`relative transition-opacity duration-300 ${drillStep >= 2 ? 'opacity-100' : 'opacity-30'}`}>
                   <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-950/80"></span>
                   <div className="flex items-baseline justify-between">
                     <span className="font-semibold text-amber-300">BFD Micro-Probe Timeout (150ms)</span>
                     <span className="text-[10px] font-mono text-slate-500">T+0.15s</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">3 consecutive heartbeats dropped. Primary interface declared DEAD.</p>
+                  <p className="text-[11px] text-slate-400">
+                    3 consecutive heartbeats dropped to {site.city} core gateway. Primary interface declared DEAD.
+                  </p>
                 </div>
 
                 {/* Event 3 */}
-                <div className="relative">
+                <div className={`relative transition-opacity duration-300 ${drillStep >= 3 ? 'opacity-100' : 'opacity-30'}`}>
                   <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-950/80"></span>
                   <div className="flex items-baseline justify-between">
-                    <span className="font-semibold text-emerald-300">Autonomous SDN Satellite Cutover</span>
+                    <span className="font-semibold text-emerald-300">Autonomous SDN Cutover</span>
                     <span className="text-[10px] font-mono text-slate-500">T+0.42s</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">Forwarding table repointed to Eutelsat OneWeb dish. Zero transaction loss.</p>
+                  <p className="text-[11px] text-slate-400">
+                    Forwarding table repointed to {backupBadge?.label || 'Eutelsat OneWeb LEO Satellite'}. Zero transaction loss.
+                  </p>
                 </div>
 
                 {/* Event 4 */}
-                <div className="relative">
+                <div className={`relative transition-opacity duration-300 ${drillStep >= 4 ? 'opacity-100' : 'opacity-30'}`}>
                   <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-sky-500 ring-4 ring-sky-950/80"></span>
                   <div className="flex items-baseline justify-between">
                     <span className="font-semibold text-sky-300">AIOps Root-Cause Diagnostic Completed</span>
                     <span className="text-[10px] font-mono text-slate-500">T+14.0s</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">Incident ticket INC-2026-ZM005 drafted with 95% confidence score.</p>
+                  <p className="text-[11px] text-slate-400">
+                    Incident ticket INC-2026-{site.siteCode} drafted with {diagnosis?.confidenceScore || 95}% confidence score.
+                  </p>
                 </div>
 
                 {/* Event 5 */}
-                <div className="relative">
+                <div className={`relative transition-opacity duration-300 ${drillStep >= 5 ? 'opacity-100' : 'opacity-30'}`}>
                   <span className="absolute -left-6 top-1 w-2.5 h-2.5 rounded-full bg-purple-500 ring-4 ring-purple-950/80"></span>
                   <div className="flex items-baseline justify-between">
                     <span className="font-semibold text-purple-300">OSS Field Work-Order Staged</span>
                     <span className="text-[10px] font-mono text-slate-500">T+32.0s</span>
                   </div>
-                  <p className="text-[11px] text-slate-400">4x4 mobile unit WO-2026-6706 assigned with Cisco SFP+ and OTDR tester.</p>
+                  <p className="text-[11px] text-slate-400">
+                    4x4 mobile unit {workOrder.vehicle} ({workOrder.orderId}) assigned with {workOrder.requiredSpares[0]}.
+                  </p>
                 </div>
               </div>
             ) : (
@@ -598,7 +662,7 @@ Synthesized by: ${diagnosis.modelUsed}
       <WorkOrderModal
         isOpen={isWorkOrderOpen}
         onClose={() => setIsWorkOrderOpen(false)}
-        workOrder={generateOssWorkOrder(site)}
+        workOrder={workOrder}
       />
     </div>
   );

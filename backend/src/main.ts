@@ -33,7 +33,7 @@ async function bootstrap() {
     }),
   );
 
-  const port = process.env.BACKEND_PORT || 3001;
+  const port = process.env.PORT || process.env.BACKEND_PORT || 3001;
   const host = '0.0.0.0';
 
   await app.listen(port, host);

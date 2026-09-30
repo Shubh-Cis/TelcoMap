@@ -25,10 +25,8 @@ services:
   # ----------------------------------------------------------------------------
   # Frontend Static Site (React 18 + Vite + Leaflet)
   # ----------------------------------------------------------------------------
-  - type: web
+  - type: static
     name: telcomap-frontend
-    runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist

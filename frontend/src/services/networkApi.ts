@@ -1,6 +1,6 @@
 import { Site, NetworkSummary, TopologyData, SystemHealth, Device, AiDiagnosisResult, WeeklyNetworkReport, RadarTelemetrySummary } from '../types/network';
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
+const API_BASE = ((import.meta as any).env?.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

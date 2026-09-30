@@ -20,13 +20,13 @@ services:
         value: '*'
       - key: GEMINI_MODEL
         value: gemini-1.5-flash
-      # Optional: Add GEMINI_API_KEY and CLOUDFLARE_API_TOKEN in Render Dashboard
 
   # ----------------------------------------------------------------------------
   # Frontend Static Site (React 18 + Vite + Leaflet)
   # ----------------------------------------------------------------------------
-  - type: static
+  - type: web
     name: telcomap-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
@@ -36,4 +36,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        sync: false # Set to https://<your-telcomap-backend>.onrender.com/api
+        sync: false

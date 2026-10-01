@@ -1,27 +1,32 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
-import { NetworkSummary } from './components/NetworkSummary';
+import { NavigationSidebar, ViewTab } from './components/NavigationSidebar';
+import { OverviewDashboard } from './components/OverviewDashboard';
 import { NetworkMap } from './components/NetworkMap';
 import { SiteDetails } from './components/SiteDetails';
-import { SiteTable } from './components/SiteTable';
+import { NetworkSummary } from './components/NetworkSummary';
+import { OssDashboard } from './components/OssDashboard';
+import { BssDashboard } from './components/BssDashboard';
+import { AiOpsDashboard } from './components/AiOpsDashboard';
+import { ChaosSimulator } from './components/ChaosSimulator';
 import { NetworkTopology } from './components/NetworkTopology';
+import { RadarWidget } from './components/RadarWidget';
 import { AddSiteModal } from './components/AddSiteModal';
 import { WeeklyReportModal } from './components/WeeklyReportModal';
-import { RadarWidget } from './components/RadarWidget';
 import { GuidedDemoBar, TOUR_STEPS } from './components/GuidedDemoBar';
 import { networkApi } from './services/networkApi';
 import { Site, NetworkSummary as SummaryType, TopologyData, SystemHealth, OperationalStatus } from './types/network';
 import { Info, AlertCircle } from 'lucide-react';
 
 export function App() {
-  const [activeView, setActiveView] = useState<'map' | 'topology' | 'table'>('map');
+  const [activeView, setActiveView] = useState<ViewTab>('overview');
   const [selectedFilter, setSelectedFilter] = useState<OperationalStatus | 'ALL'>('ALL');
   const [selectedSite, setSelectedSite] = useState<Site | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isWeeklyModalOpen, setIsWeeklyModalOpen] = useState<boolean>(false);
   const [isFailoverActive, setIsFailoverActive] = useState<boolean>(false);
 
-  // Phase 11: Guided Executive Pitch Tour state
+  // Guided Executive Pitch Tour state
   const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
   const [tourStep, setTourStep] = useState<number>(1);
 
@@ -88,7 +93,6 @@ export function App() {
     });
     setSelectedSite(newSite);
     setActiveView('map');
-    // Refresh operational summary and topology
     loadNetworkData();
   };
 
@@ -114,6 +118,10 @@ export function App() {
     }
   };
 
+  const degradedOrCriticalCount = sites.filter((s) => s.status !== 'HEALTHY').length;
+  const totalMrrUsd =
+    sites.reduce((sum, s) => sum + (s.bssContract?.monthlyRevenueUsd || 0), 0) || 150500;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Top NOC Header */}
@@ -129,7 +137,7 @@ export function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 md:p-6 max-w-[1760px] mx-auto w-full">
+      <main className="flex-1 p-4 md:p-6 max-w-[1840px] mx-auto w-full">
         {/* Error Alert if API is down */}
         {error && (
           <div className="mb-4 p-4 rounded-xl bg-rose-950/50 border border-rose-500/50 text-rose-300 flex items-center justify-between">
@@ -156,30 +164,50 @@ export function App() {
             <span className="font-semibold text-slate-200">
               Telecom Network Feature Active:
             </span>{' '}
-            Monitoring multi-technology infrastructure across Zambia (4G, 5G, Fibre, Microwave, Satellite). Sites, devices, coordinates, and health statuses are loaded directly from the NestJS Backend and PostgreSQL database.
+            Monitoring multi-technology infrastructure across Zambia (4G, 5G, Fibre, Microwave, Satellite). Sites, devices, coordinates, FCAPS alarms, and BSS contracts are loaded dynamically from PostgreSQL.
           </div>
         </div>
 
-        {/* 2-Column Responsive Layout: Left Sticky Radar + Right Main Operations */}
+        {/* 2-Column Responsive Layout: Left Navigation Sidebar + Right Dedicated View */}
         <div className="flex flex-col lg:flex-row gap-6 items-start">
-          {/* LEFT SIDEBAR: Regional Internet & ISP Radar (Always Visible, Sticky) */}
-          <aside className="w-full lg:w-[350px] xl:w-[380px] shrink-0 lg:sticky lg:top-20 z-20">
-            <RadarWidget />
-          </aside>
+          {/* LEFT SIDEBAR: Carrier-Grade Navigation Console */}
+          <NavigationSidebar
+            activeView={activeView}
+            onViewChange={setActiveView}
+            health={health}
+            activeAlarmsCount={degradedOrCriticalCount}
+            totalMrrUsd={totalMrrUsd}
+            onOpenWeeklyReport={() => setIsWeeklyModalOpen(true)}
+            onStartTour={handleToggleTour}
+          />
 
-          {/* RIGHT COLUMN: Executive Metrics + Map + Site Inspector / Other Views */}
+          {/* RIGHT COLUMN: Dedicated Feature Views */}
           <div className="flex-1 min-w-0 w-full space-y-6">
-            {/* Executive Metric Summary */}
-            <NetworkSummary
-              summary={summary}
-              selectedFilter={selectedFilter}
-              onSelectFilter={setSelectedFilter}
-            />
+            {/* VIEW 1: Panoramic Overview / Executive Cockpit */}
+            {activeView === 'overview' && (
+              <OverviewDashboard
+                summary={summary}
+                health={health}
+                sites={sites}
+                onSelectSite={(site) => {
+                  setSelectedSite(site);
+                  setActiveView('map');
+                }}
+                onNavigate={setActiveView}
+                onStartTour={handleToggleTour}
+                onOpenWeeklyReport={() => setIsWeeklyModalOpen(true)}
+              />
+            )}
 
-            {/* VIEW 1: Interactive Geographic NOC Map */}
+            {/* VIEW 2: Interactive Geographic NOC Map */}
             {activeView === 'map' && (
               <div className="space-y-6">
-                {/* Full-Width Interactive Geographic Map */}
+                <NetworkSummary
+                  summary={summary}
+                  selectedFilter={selectedFilter}
+                  onSelectFilter={setSelectedFilter}
+                />
+
                 <div className="w-full">
                   <NetworkMap
                     sites={sites.filter((s) => selectedFilter === 'ALL' || s.status === selectedFilter)}
@@ -189,7 +217,6 @@ export function App() {
                   />
                 </div>
 
-                {/* Site Details Panel Directly Below Map */}
                 <div className="w-full rounded-xl transition-all duration-300" id="site-inspector-panel">
                   {selectedSite ? (
                     <SiteDetails
@@ -201,14 +228,51 @@ export function App() {
                   ) : (
                     <div className="w-full min-h-[140px] border border-dashed border-slate-800 rounded-xl p-8 flex flex-col items-center justify-center text-center text-slate-500 text-xs">
                       <p className="font-semibold mb-1 text-slate-300">No Site Selected</p>
-                      <p>Click on any marker on the map above to inspect its live network links, AI diagnostics, BSS contract, and hardware devices.</p>
+                      <p>
+                        Click on any marker on the map above to inspect its live network links, AI diagnostics, BSS contract, and hardware devices.
+                      </p>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* VIEW 2: Visual Network Topology */}
+            {/* VIEW 3: OSS Suite (FCAPS Alarms & 4x4 Rigging) */}
+            {activeView === 'oss' && (
+              <OssDashboard
+                sites={sites}
+                onSelectSite={(site) => {
+                  setSelectedSite(site);
+                  setActiveView('map');
+                }}
+                onNavigateToMap={() => setActiveView('map')}
+              />
+            )}
+
+            {/* VIEW 4: BSS Governance & SLA Contracts */}
+            {activeView === 'bss' && (
+              <BssDashboard
+                sites={sites}
+                onSelectSite={(site) => {
+                  setSelectedSite(site);
+                  setActiveView('map');
+                }}
+                onNavigateToChaos={() => setActiveView('chaos')}
+              />
+            )}
+
+            {/* VIEW 5: Cloudflare Radar Telemetry */}
+            {activeView === 'radar' && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+                  <span className="font-semibold text-slate-200">Cloudflare Radar Macro Telemetry:</span>{' '}
+                  Independent Internet Health, National Jitter/Latency Percentiles (P25/P50/P75), and BGP Routing Outage Data across Zambia (AS36962, AS37150, AS37153).
+                </div>
+                <RadarWidget />
+              </div>
+            )}
+
+            {/* VIEW 6: Visual Network Topology Graph */}
             {activeView === 'topology' && (
               <NetworkTopology
                 topology={topology}
@@ -220,29 +284,26 @@ export function App() {
               />
             )}
 
-            {/* VIEW 3: Site Inventory Table */}
-            {activeView === 'table' && (
-              <div className="space-y-6">
-                <SiteTable
-                  sites={sites}
-                  selectedFilter={selectedFilter}
-                  onSelectFilter={setSelectedFilter}
-                  onSelectSite={(site) => {
-                    setSelectedSite(site);
-                    setActiveView('map');
-                  }}
-                  selectedSiteId={selectedSite?.id}
-                  onOpenAddSite={() => setIsAddModalOpen(true)}
-                />
-                {selectedSite && (
-                  <SiteDetails
-                    site={selectedSite}
-                    onClose={() => setSelectedSite(null)}
-                    isFailoverActive={isFailoverActive}
-                    onFailoverToggle={setIsFailoverActive}
-                  />
-                )}
-              </div>
+            {/* VIEW 7: AIOps Copilot & Automated Diagnostics */}
+            {activeView === 'aiops' && (
+              <AiOpsDashboard
+                sites={sites}
+                selectedSite={selectedSite}
+                onSelectSite={setSelectedSite}
+                onOpenWeeklyReport={() => setIsWeeklyModalOpen(true)}
+              />
+            )}
+
+            {/* VIEW 8: Disaster Recovery & Failover Simulator */}
+            {activeView === 'chaos' && (
+              <ChaosSimulator
+                sites={sites}
+                onSelectSite={(site) => {
+                  setSelectedSite(site);
+                  setActiveView('map');
+                }}
+                onNavigateToMap={() => setActiveView('map')}
+              />
             )}
           </div>
         </div>
@@ -280,7 +341,7 @@ export function App() {
         </div>
       </footer>
 
-      {/* Phase 11: 1-Click Guided Pitch & Demo Mode */}
+      {/* Guided Pitch & Demo Mode */}
       <GuidedDemoBar
         isOpen={isTourOpen}
         onClose={() => setIsTourOpen(false)}

@@ -1,6 +1,26 @@
 import { Site, EnterpriseBssProfile, OssWorkOrder } from '../types/network';
 
 export function getSiteBssProfile(site: Site, isFailoverActive = false): EnterpriseBssProfile {
+  if (site.bssContract) {
+    const c = site.bssContract;
+    const isDegradedOrCritical = site.status !== 'HEALTHY';
+    const currentSla = isFailoverActive ? 99.85 : isDegradedOrCritical ? (site.status === 'CRITICAL' ? 95.80 : 98.10) : 99.98;
+    const penaltyRisk = isFailoverActive ? Math.round(c.monthlyRevenueUsd * 0.05) : isDegradedOrCritical ? Math.round(c.monthlyRevenueUsd * 0.15) : 0;
+
+    return {
+      clientName: c.clientName,
+      industry: c.industry,
+      contractTier: c.contractTier,
+      monthlyRevenueUsd: c.monthlyRevenueUsd,
+      slaTargetPercent: c.slaTargetPercent,
+      currentSlaPercent: currentSla,
+      penaltyRiskUsd: penaltyRisk,
+      dataSovereignty: c.dataSovereignty,
+      lawfulInterceptionStatus: c.lawfulInterceptionStatus,
+      zictaLicense: c.zictaLicense,
+    };
+  }
+
   switch (site.siteCode) {
     case 'ZM-004': // Solwezi Remote Station
       return {
@@ -72,6 +92,23 @@ export function getSiteBssProfile(site: Site, isFailoverActive = false): Enterpr
 }
 
 export function generateOssWorkOrder(site: Site): OssWorkOrder {
+  if (site.workOrders && site.workOrders.length > 0) {
+    const wo = site.workOrders[0];
+    return {
+      orderId: wo.orderId,
+      siteCode: site.siteCode,
+      siteName: site.siteName,
+      priority: wo.priority as any,
+      assignedCrew: wo.assignedCrew,
+      vehicle: wo.vehicle,
+      truckRollCostUsd: wo.truckRollCostUsd,
+      estimatedArrival: wo.estimatedArrival,
+      requiredSpares: typeof wo.requiredSpares === 'string' ? wo.requiredSpares.split(', ') : wo.requiredSpares,
+      status: (wo.status === 'DISPATCHED' ? 'DISPATCHED_EN_ROUTE' : 'PENDING_AUTHORIZATION') as any,
+      createdAt: wo.createdAt,
+    };
+  }
+
   const isCritical = site.status === 'CRITICAL';
   const isDegraded = site.status === 'DEGRADED';
 

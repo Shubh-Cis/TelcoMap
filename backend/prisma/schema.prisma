@@ -10,26 +10,29 @@ generator client {
 
 // Network Site (Physical or logical telecom POP/tower/hub)
 model Site {
-  id          String   @id @default(uuid())
-  siteCode    String   @unique // e.g. "ZM-001"
-  siteName    String           // e.g. "Lusaka Central Hub"
-  country     String           // e.g. "Zambia"
-  region      String           // e.g. "Lusaka Province"
-  city        String           // e.g. "Lusaka"
+  id          String       @id @default(uuid())
+  siteCode    String       @unique // e.g. "ZM-001"
+  siteName    String               // e.g. "Lusaka Central Hub"
+  country     String               // e.g. "Zambia"
+  region      String               // e.g. "Lusaka Province"
+  city        String               // e.g. "Lusaka"
   latitude    Float
   longitude   Float
-  status      String   @default("HEALTHY") // HEALTHY | DEGRADED | CRITICAL
-  primaryTech String           // FIVE_G | FOUR_G | FIBRE | MICROWAVE | SATELLITE | HYBRID
-  backupTech  String?          // FIBRE | MICROWAVE | SATELLITE | null
+  status      String       @default("HEALTHY") // HEALTHY | DEGRADED | CRITICAL
+  primaryTech String               // FIVE_G | FOUR_G | FIBRE | MICROWAVE | SATELLITE | HYBRID
+  backupTech  String?              // FIBRE | MICROWAVE | SATELLITE | null
   devices     Device[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  bssContract BssContract?
+  workOrders  WorkOrder[]
+  alarms      Alarm[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([status])
   @@index([country])
 }
 
-// Network Device deployed at a specific Site
+// Network Device deployed at a specific Site (OSS Configuration / CMDB)
 model Device {
   id         String   @id @default(uuid())
   deviceCode String   @unique // e.g. "DEV-ZM001-01"
@@ -45,5 +48,61 @@ model Device {
   updatedAt  DateTime @updatedAt
 
   @@index([siteId])
+  @@index([status])
+}
+
+// BSS Enterprise SLA Contract Governance (TM Forum SID Customer Agreement)
+model BssContract {
+  id                       String   @id @default(uuid())
+  siteId                   String   @unique
+  site                     Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  clientName               String   // e.g. "First Quantum Minerals (Sentinel & Kansanshi)"
+  industry                 String   // e.g. "Copper & Nickel Heavy Mining"
+  contractTier             String   // e.g. "Tier-1 Mission-Critical SLA"
+  monthlyRevenueUsd        Float    // e.g. 28500
+  slaTargetPercent         Float    // e.g. 99.90
+  dataSovereignty          String   // e.g. "Local Breakout (Lusaka Core Gateway)"
+  lawfulInterceptionStatus String   // e.g. "ZICTA-LI Probe Certified (Compliant)"
+  zictaLicense             String   // e.g. "ZICTA-VSAT-NTN-2026-084"
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+}
+
+// OSS Workforce Field Work-Order (TM Forum Trouble Ticket / Workforce Automation)
+model WorkOrder {
+  id               String   @id @default(uuid())
+  orderId          String   @unique // e.g. "WO-2026-6706"
+  siteId           String
+  site             Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  priority         String   // "P1 - CRITICAL" | "P2 - HIGH" | "P3 - NORMAL"
+  assignedCrew     String   // e.g. "North-Western Mobile Rigging & VSAT Unit 2"
+  vehicle          String   // e.g. "Toyota Hilux 4x4 Heavy-Duty Rigging Truck (ZM-NOC-44)"
+  truckRollCostUsd Float    // e.g. 480
+  estimatedArrival String   // e.g. "1 Hour 35 Minutes"
+  requiredSpares   String   // JSON or comma-separated list of spare parts
+  status           String   @default("STAGED") // STAGED | DISPATCHED | IN_PROGRESS | RESOLVED
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([siteId])
+  @@index([status])
+}
+
+// OSS Active Alarm Console (ITU-T X.733 / TM Forum Alarm Management)
+model Alarm {
+  id          String   @id @default(uuid())
+  alarmCode   String   // e.g. "ALM-FBR-001"
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  severity    String   // "CRITICAL" | "MAJOR" | "MINOR" | "WARNING"
+  title       String   // e.g. "Carrier Optical Signal Loss Detected"
+  source      String   // e.g. "Port 1/0/1 - DWDM Transceiver"
+  description String   // e.g. "100% optical loss on Primary Fibre transceiver port"
+  status      String   @default("ACTIVE") // ACTIVE | ACKNOWLEDGED | CLEARED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([siteId])
+  @@index([severity])
   @@index([status])
 }

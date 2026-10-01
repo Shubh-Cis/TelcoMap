@@ -1,13 +1,13 @@
-import React from 'react';
-import { Activity, Database, RefreshCw, Radio, Layers, MapPin, Plus, Sparkles, FileText } from 'lucide-react';
+import { Activity, Database, RefreshCw, Radio, Layers, MapPin, Plus, Sparkles, LayoutDashboard, DollarSign, Zap } from 'lucide-react';
 import { SystemHealth } from '../types/network';
+import { ViewTab } from './NavigationSidebar';
 
 interface HeaderProps {
   health: SystemHealth | null;
   loading: boolean;
   onRefresh: () => void;
-  activeView: 'map' | 'topology' | 'table';
-  onViewChange: (view: 'map' | 'topology' | 'table') => void;
+  activeView: ViewTab;
+  onViewChange: (view: ViewTab) => void;
   onOpenAddSite: () => void;
   onOpenWeeklyReport: () => void;
   onToggleGuidedTour: () => void;
@@ -64,6 +64,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* View Mode Buttons */}
           <div className="flex items-center bg-slate-800/80 p-1 rounded-lg border border-slate-700">
             <button
+              onClick={() => onViewChange('overview')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeView === 'overview'
+                  ? 'bg-sky-500 text-white shadow'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              Overview
+            </button>
+            <button
               onClick={() => onViewChange('map')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 activeView === 'map'
@@ -72,29 +83,40 @@ export const Header: React.FC<HeaderProps> = ({
               }`}
             >
               <MapPin className="w-3.5 h-3.5" />
-              NOC Map
+              GIS Map
             </button>
             <button
-              onClick={() => onViewChange('topology')}
+              onClick={() => onViewChange('oss')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeView === 'topology'
-                  ? 'bg-sky-500 text-white shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              Topology
-            </button>
-            <button
-              onClick={() => onViewChange('table')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                activeView === 'table'
+                activeView === 'oss'
                   ? 'bg-sky-500 text-white shadow'
                   : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
               }`}
             >
               <Activity className="w-3.5 h-3.5" />
-              Inventory
+              OSS
+            </button>
+            <button
+              onClick={() => onViewChange('bss')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeView === 'bss'
+                  ? 'bg-sky-500 text-white shadow'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              <DollarSign className="w-3.5 h-3.5" />
+              BSS
+            </button>
+            <button
+              onClick={() => onViewChange('chaos')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                activeView === 'chaos'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              Chaos
             </button>
           </div>
 

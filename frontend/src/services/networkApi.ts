@@ -1,4 +1,16 @@
-import { Site, NetworkSummary, TopologyData, SystemHealth, Device, AiDiagnosisResult, WeeklyNetworkReport, RadarTelemetrySummary } from '../types/network';
+import {
+  Site,
+  NetworkSummary,
+  TopologyData,
+  SystemHealth,
+  Device,
+  AiDiagnosisResult,
+  WeeklyNetworkReport,
+  RadarTelemetrySummary,
+  BssSummaryResponse,
+  WorkOrdersResponse,
+  AlarmsResponse,
+} from '../types/network';
 
 const API_BASE = ((import.meta as any).env?.VITE_API_BASE_URL || '/api').replace(/\/+$/, '');
 
@@ -115,5 +127,29 @@ export const networkApi = {
     if (refresh) params.append('refresh', 'true');
     const res = await fetch(`${API_BASE}/radar/summary?${params.toString()}`);
     return handleResponse<RadarTelemetrySummary>(res);
+  },
+
+  /**
+   * Fetches BSS Enterprise customer contracts, MRR breakdown, and SLA penalty risk
+   */
+  async getBssContracts(): Promise<BssSummaryResponse> {
+    const res = await fetch(`${API_BASE}/sites/bss`);
+    return handleResponse<BssSummaryResponse>(res);
+  },
+
+  /**
+   * Fetches OSS Field Force 4x4 Rigging dispatch work orders and replacement parts
+   */
+  async getWorkOrders(): Promise<WorkOrdersResponse> {
+    const res = await fetch(`${API_BASE}/sites/work-orders`);
+    return handleResponse<WorkOrdersResponse>(res);
+  },
+
+  /**
+   * Fetches OSS active FCAPS carrier alarms with ITU-T severity classifications
+   */
+  async getAlarms(): Promise<AlarmsResponse> {
+    const res = await fetch(`${API_BASE}/sites/alarms`);
+    return handleResponse<AlarmsResponse>(res);
   },
 };

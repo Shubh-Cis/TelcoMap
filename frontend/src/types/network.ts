@@ -27,6 +27,9 @@ export interface Site {
   primaryTech: ConnectivityTechnology;
   backupTech?: ConnectivityTechnology | null;
   devices: Device[];
+  bssContract?: BssContract | null;
+  workOrders?: WorkOrder[];
+  alarms?: Alarm[];
   createdAt: string;
   updatedAt: string;
 }
@@ -175,12 +178,117 @@ export interface OssWorkOrder {
   orderId: string;
   siteCode: string;
   siteName: string;
-  priority: 'P1 - CRITICAL' | 'P2 - HIGH' | 'P3 - NORMAL';
+  priority: 'P1 - CRITICAL' | 'P2 - HIGH' | 'P3 - NORMAL' | string;
   assignedCrew: string;
   vehicle: string;
   truckRollCostUsd: number;
   estimatedArrival: string;
   requiredSpares: string[];
-  status: 'PENDING_AUTHORIZATION' | 'DISPATCHED_EN_ROUTE';
+  status: 'PENDING_AUTHORIZATION' | 'DISPATCHED_EN_ROUTE' | string;
   createdAt: string;
+}
+
+export interface BssContract {
+  id: string;
+  siteId: string;
+  clientName: string;
+  industry: string;
+  contractTier: string;
+  monthlyRevenueUsd: number;
+  slaTargetPercent: number;
+  dataSovereignty: string;
+  lawfulInterceptionStatus: string;
+  zictaLicense: string;
+  createdAt: string;
+  updatedAt: string;
+  site?: {
+    id: string;
+    siteCode: string;
+    siteName: string;
+    city: string;
+    status: OperationalStatus;
+    primaryTech: string;
+    backupTech?: string | null;
+  };
+}
+
+export interface BssSummaryResponse {
+  summary: {
+    totalContracts: number;
+    totalMrrUsd: number;
+    monthlyRevenueAtRiskUsd: number;
+    slaComplianceRate: number;
+    averageSlaTarget: number;
+    zictaAuditStatus: string;
+  };
+  contracts: BssContract[];
+}
+
+export interface WorkOrder {
+  id: string;
+  orderId: string;
+  siteId: string;
+  priority: string;
+  assignedCrew: string;
+  vehicle: string;
+  truckRollCostUsd: number;
+  estimatedArrival: string;
+  requiredSpares: string;
+  status: 'STAGED' | 'DISPATCHED' | 'IN_PROGRESS' | 'RESOLVED';
+  createdAt: string;
+  updatedAt: string;
+  site?: {
+    id: string;
+    siteCode: string;
+    siteName: string;
+    city: string;
+    status: OperationalStatus;
+    primaryTech: string;
+    backupTech?: string | null;
+  };
+}
+
+export interface WorkOrdersResponse {
+  summary: {
+    totalOrders: number;
+    staged: number;
+    dispatched: number;
+    inProgress: number;
+    resolved: number;
+    totalTruckRollCostUsd: number;
+    avgEtaMinutes: number;
+  };
+  workOrders: WorkOrder[];
+}
+
+export interface Alarm {
+  id: string;
+  alarmCode: string;
+  siteId: string;
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR' | 'WARNING';
+  title: string;
+  source: string;
+  description: string;
+  status: 'ACTIVE' | 'ACKNOWLEDGED' | 'CLEARED';
+  createdAt: string;
+  updatedAt: string;
+  site?: {
+    id: string;
+    siteCode: string;
+    siteName: string;
+    city: string;
+    status: OperationalStatus;
+  };
+}
+
+export interface AlarmsResponse {
+  summary: {
+    totalActiveAlarms: number;
+    critical: number;
+    major: number;
+    minor: number;
+    warning: number;
+    mttrMinutes: number;
+  };
+  alarms: Alarm[];
 }

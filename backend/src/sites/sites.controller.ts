@@ -20,6 +20,21 @@ export class SitesController {
     return this.sitesService.getTopology();
   }
 
+  @Get('bss')
+  async getBssContracts() {
+    return this.sitesService.getBssContracts();
+  }
+
+  @Get('work-orders')
+  async getWorkOrders() {
+    return this.sitesService.getWorkOrders();
+  }
+
+  @Get('alarms')
+  async getAlarms() {
+    return this.sitesService.getAlarms();
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.sitesService.findOne(id);
